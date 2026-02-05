@@ -1,0 +1,10 @@
+Descripción:
+
+Queremos hacer un sistema de notificación via whatsapp para citas de peluquería. Usaremos WAHA para enviar los mensajes, google calendar y google contacts para obtener los datos de los clientes y citas (que ahora mismo están en un bbdd ,mdb y hay que migrar).
+ y todo lo ejecutaremos en una VPS (Hetzner Cloud en principio). Se enviará un mensaje en el moemnot de anotar la cita en el calendario con los detalle de la misam y otra el dia de antes a las 19:00 de la tarde.
+
+Requesitos:
+-facilidad de uso como prioridad
+-3 bloques de citas (son 3 peluqueras)de
+-coger citas con voz
+-agregar a nuevas clientas de forma sencilla
