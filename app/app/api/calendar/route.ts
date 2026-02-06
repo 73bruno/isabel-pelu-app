@@ -193,7 +193,44 @@ export async function PUT(request: NextRequest) {
     }
 }
 
-// ... DELETE handler remains same ...
+// DELETE: Delete an event
+export async function DELETE(request: NextRequest) {
+    // Invalidate cache on write
+    CACHE.clear();
+
+    try {
+        const searchParams = request.nextUrl.searchParams;
+        const eventId = searchParams.get('eventId');
+        const stylist = searchParams.get('stylist');
+
+        if (!eventId || !stylist) {
+            return NextResponse.json(
+                { error: 'eventId and stylist are required' },
+                { status: 400 }
+            );
+        }
+
+        const stylistKey = stylist.toLowerCase();
+        const calendarId = CALENDARS[stylistKey];
+
+        if (!calendarId) {
+            return NextResponse.json(
+                { error: `Invalid stylist: ${stylist}` },
+                { status: 400 }
+            );
+        }
+
+        await deleteEvent(calendarId, eventId);
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Calendar DELETE error:', error);
+        return NextResponse.json(
+            { error: 'Failed to delete event' },
+            { status: 500 }
+        );
+    }
+}
 
 // Helper to format Google Calendar event to our format
 function formatEvent(event: any, stylist: string) {
