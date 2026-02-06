@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Schedule } from '../utils/schedule';
+import ServerStatus from './ServerStatus';
 
 // Stylist configuration type
 export interface StylistConfig {
@@ -40,6 +41,7 @@ interface SettingsModalProps {
     onUpdateStylists: (configs: StylistConfig[]) => void;
     schedule: Schedule;
     onUpdateSchedule: (newSchedule: Schedule) => void;
+    initialTab?: 'general' | 'stylists' | 'schedule';
 }
 
 // Helper functions
@@ -98,9 +100,17 @@ export default function SettingsModal({
     stylistConfigs,
     onUpdateStylists,
     schedule,
-    onUpdateSchedule
+    onUpdateSchedule,
+    initialTab = 'general'
 }: SettingsModalProps) {
-    const [activeTab, setActiveTab] = useState<'general' | 'stylists' | 'schedule'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'stylists' | 'schedule'>(initialTab);
+
+    // Reset tab when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setActiveTab(initialTab);
+        }
+    }, [isOpen, initialTab]);
 
     // Stylist editing
     const [editingStylist, setEditingStylist] = useState<string | null>(null);
@@ -298,6 +308,11 @@ export default function SettingsModal({
                                     >
                                         <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform ${isDarkMode ? 'translate-x-6' : ''}`} />
                                     </button>
+                                </div>
+
+                                <div className="border-t border-gray-100 dark:border-gray-800 pt-6">
+                                    <h3 className="text-lg font-semibold mb-4">Estado del Sistema</h3>
+                                    <ServerStatus mode="full" />
                                 </div>
                             </div>
                         )}

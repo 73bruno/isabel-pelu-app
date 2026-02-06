@@ -55,7 +55,7 @@ export function isAllowedNumber(phone: string): boolean {
 /**
  * Helper para peticiones HTTP a WAHA
  */
-async function wahaRequest(endpoint: string, method: string, body?: any) {
+export async function wahaRequest(endpoint: string, method: string, body?: any) {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         'accept': 'application/json',
@@ -161,5 +161,75 @@ export async function checkWahaSessionStatus() {
     } catch (error) {
         console.error('[WAHA CHECK] Failed:', error);
         return { isConnected: false, error };
+    }
+}
+
+
+/**
+ * Obtiene el estado técnico de la sesión (STOPPED, STARTING, WORKING, FAILED)
+ */
+export async function getSessionStatus() {
+    try {
+        const response: any = await wahaRequest(`sessions/${SESSION}`, 'GET');
+        return {
+            status: response.status, // WORKING, SCANNING, STOPPED, FAILED, STARTING
+            me: response.me
+        };
+    } catch (error) {
+        console.error('[WAHA STATUS] Failed:', error);
+        return { status: 'UNKNOWN', error };
+    }
+}
+
+/**
+ * Reinicia la sesión de WAHA (Stop -> Start)
+ */
+export async function restartSession() {
+    console.log('[WAHA RESTART] Initiating session restart...');
+    try {
+        // 1. Stop
+        try {
+            await wahaRequest('sessions/stop', 'POST', { name: SESSION });
+        } catch (e) {
+            console.warn('[WAHA RESTART] Stop failed (maybe already stopped):', e);
+        }
+
+        // 2. Wait
+        await setTimeout(2000);
+
+        // 3. Start
+        await wahaRequest('sessions/start', 'POST', { name: SESSION });
+
+        return { success: true };
+    } catch (error: any) {
+        console.error('[WAHA RESTART] Failed:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+
+/**
+ * Obtiene el QR (Screenshot) de la sesión en tiempo real
+ */
+export async function getSessionQR() {
+    try {
+        const url = `${WAHA_URL}/api/screenshot?session=${SESSION}`;
+        const headers: Record<string, string> = API_KEY ? { 'X-Api-Key': API_KEY } : {};
+
+        const response = await fetch(url, { headers });
+
+        if (!response.ok) {
+            throw new Error('No se pudo obtener la captura');
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const base64 = buffer.toString('base64');
+
+        // WAHA returns a PNG screenshot typically
+        return { success: true, image: `data:image/png;base64,${base64}` };
+    } catch (error: any) {
+        console.error('[WAHA QR] Failed:', error);
+        return { success: false, error: error.message };
     }
 }

@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import AuthStatus from './AuthStatus';
+import ServerStatus from './ServerStatus';
 
 interface HeaderProps {
   selectedDate: Date;
@@ -10,7 +11,7 @@ interface HeaderProps {
   onViewChange: (mode: 'day' | 'week') => void;
   currentStylist: string;
   onStylistChange: (stylist: string) => void;
-  onOpenSettings: () => void;
+  onOpenSettings: (tab?: 'general' | 'stylists' | 'schedule') => void;
   stylists?: string[]; // Optional for now to avoid breaking immediate parents, but we will pass it
 }
 
@@ -87,12 +88,15 @@ export default function Header({
 
       <div className="flex items-center gap-2 sm:gap-4 justify-between sm:justify-end w-full sm:w-auto overflow-x-auto scrollbar-hide">
 
+        {/* Server Status Indicator */}
+        <ServerStatus mode="mini" onClick={() => onOpenSettings('general')} />
+
         {/* Auth Status - Google Login for Contacts */}
         <AuthStatus />
 
         {/* Settings Button */}
         <button
-          onClick={onOpenSettings}
+          onClick={() => onOpenSettings()}
           className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
           title="Ajustes Avanzados"
         >

@@ -42,6 +42,7 @@ export default function Home() {
   });
   const [schedule, setSchedule] = useState<Schedule>(DEFAULT_OPENING_HOURS);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<'general' | 'stylists' | 'schedule'>('general');
 
   // Derived: active stylists sorted by order (Memoized to prevent infinite loops)
   const activeStylists = useMemo(() =>
@@ -446,7 +447,10 @@ export default function Home() {
         onViewChange={setViewMode}
         currentStylist={currentStylist}
         onStylistChange={setCurrentStylist}
-        onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenSettings={(tab) => {
+          setSettingsTab(tab || 'general');
+          setIsSettingsOpen(true);
+        }}
         stylists={stylistNames}
       />
 
@@ -470,6 +474,7 @@ export default function Home() {
 
       <SettingsModal
         isOpen={isSettingsOpen}
+        initialTab={settingsTab}
         onClose={() => setIsSettingsOpen(false)}
         stylistConfigs={stylistConfigs}
         onUpdateStylists={setStylistConfigs}
