@@ -13,5 +13,5 @@ export default auth((req) => {
 
 // Configure which paths NOT to protect (static files, images, etc)
 export const config = {
-    matcher: ["/((?!api/cron|_next/static|_next/image|favicon.ico).*)"], // Protect everything except cron & statics
+    matcher: ["/((?!api/cron|api/auth|_next/static|_next/image|favicon.ico).*)"], // Protect everything except cron, auth & statics
 }
