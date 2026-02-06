@@ -202,7 +202,7 @@ function formatEvent(event: any, stylist: string) {
 
     return {
         id: event.id,
-        time: start ? new Date(start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '',
+        time: start ? new Date(start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }) : '',
         clientName: event.summary || 'Sin nombre',
         service,
         phone,

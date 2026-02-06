@@ -34,6 +34,23 @@ export const calendar = google.calendar({ version: 'v3', auth });
 // People API client (for contacts)
 export const people = google.people({ version: 'v1', auth });
 
+// Helper: Format Date to Europe/Madrid ISO string (strip Z)
+function toMadridISO(date: Date): string {
+    // Format: "YYYY-MM-DDTHH:mm:ss" in Madrid time
+    // We use sv-SE locale because it matches ISO format YYYY-MM-DD hh:mm:ss
+    const madridDate = new Intl.DateTimeFormat('sv-SE', {
+        timeZone: 'Europe/Madrid',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    }).format(date);
+
+    return madridDate.replace(' ', 'T');
+}
+
 // Helper: Get events from a calendar for a specific date
 export async function getEventsForDate(calendarId: string, date: Date) {
     const startOfDay = new Date(date);
@@ -67,11 +84,11 @@ export async function createEvent(
             summary,
             description,
             start: {
-                dateTime: startTime.toISOString(),
+                dateTime: toMadridISO(startTime),
                 timeZone: 'Europe/Madrid',
             },
             end: {
-                dateTime: endTime.toISOString(),
+                dateTime: toMadridISO(endTime),
                 timeZone: 'Europe/Madrid',
             },
         },
@@ -96,11 +113,11 @@ export async function updateEvent(
             summary,
             description,
             start: {
-                dateTime: startTime.toISOString(),
+                dateTime: toMadridISO(startTime),
                 timeZone: 'Europe/Madrid',
             },
             end: {
-                dateTime: endTime.toISOString(),
+                dateTime: toMadridISO(endTime),
                 timeZone: 'Europe/Madrid',
             },
         },
