@@ -162,7 +162,8 @@ export default function NewAppointmentModal({
     const [remindersEnabled, setRemindersEnabled] = useState(true);
     const [isNewContact, setIsNewContact] = useState(false);
     const [isSavingContact, setIsSavingContact] = useState(false);
-    const [phoneChanged, setPhoneChanged] = useState(false);
+    const [phoneChanged, setPhoneChanged] = useState(false); // Controls if Phone UI is in "Edit Mode" AND if Phone data changed
+    const [reminderChanged, setReminderChanged] = useState(false); // New state to track reminder preference change
     const [contactSaved, setContactSaved] = useState(false);
 
     // Contact Autocomplete State
@@ -198,6 +199,7 @@ export default function NewAppointmentModal({
                 });
                 setIsNewContact(false);
                 setPhoneChanged(false);
+                setReminderChanged(false);
 
                 // If editing, use the appointment's reminder setting, default to true
                 setRemindersEnabled(editingAppointment.remindersEnabled !== false);
@@ -209,6 +211,7 @@ export default function NewAppointmentModal({
                 setSelectedContact(null);
                 setIsNewContact(false);
                 setPhoneChanged(false);
+                setReminderChanged(false);
                 setRemindersEnabled(true);
 
                 if (initialStylist) setStylist(initialStylist);
@@ -280,6 +283,7 @@ export default function NewAppointmentModal({
         setSelectedContact(contact);
         setIsNewContact(false);
         setPhoneChanged(false);
+        setReminderChanged(false);
         setContactSaved(false);
         setShowSuggestions(false);
         setSuggestions([]);
@@ -364,6 +368,7 @@ export default function NewAppointmentModal({
                 const data = await response.json();
                 setSelectedContact(data.contact);
                 setPhoneChanged(false);
+                setReminderChanged(false);
                 setContactSaved(true);
             } else {
                 console.error('Error updating contact');
@@ -558,8 +563,11 @@ export default function NewAppointmentModal({
                                         type="button"
                                         onClick={() => {
                                             setRemindersEnabled(!remindersEnabled);
-                                            // If we toggle this for an existing contact, suggest saving
-                                            if (selectedContact) setPhoneChanged(true); // Reuse this state to trigger update
+                                            // If we toggle this for an existing contact, mark as changed to suggest update
+                                            if (selectedContact) {
+                                                setReminderChanged(true);
+                                                setContactSaved(false);
+                                            }
                                         }}
                                         className={`relative w-10 h-5 rounded-full transition-colors ${remindersEnabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
                                             }`}
@@ -604,7 +612,7 @@ export default function NewAppointmentModal({
                                     )}
 
                                     {/* Existing contact with changed info - offer to update */}
-                                    {selectedContact && phoneChanged && !contactSaved && (
+                                    {selectedContact && (phoneChanged || reminderChanged) && !contactSaved && (
                                         <button
                                             type="button"
                                             onClick={handleUpdateContact}
