@@ -106,11 +106,12 @@ export async function GET(request: Request) {
                             ? new Date(event.start.dateTime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
                             : '00:00';
 
-                        // Construct message
-                        // Variación ligera para evitar spam detection (añadir emoji random al final)
-                        const randomTail = ['✨', '💇‍♀️', '👋', '🌟'][Math.floor(Math.random() * 4)];
+                        // Format Client Name (First word, Capitalized)
+                        const firstName = clientName.split(' ')[0];
+                        const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 
-                        const message = `Hola ${clientName}! 👋\n\nTe recordamos tu cita para mañana:\n📅 ${dateStr}\n⏰ ${startTime}\n💇 Con ${stylistName}\n\nTe esperamos! ${randomTail}`;
+                        // Construct message (Professional & Minimalist)
+                        const message = `Hola ${formattedName}, te recordamos tu cita para mañana:\n\n📅 ${dateStr}\n⏰ ${startTime}\n💇 Con ${stylistName}\n\nTe esperamos!`;
 
                         // Enviar
                         console.log(`[CRON] Sending reminder to ${clientName} (${phone})...`);

@@ -416,24 +416,46 @@ export default function Home() {
         }
 
         // WhatsApp Confirmation (Fire & Forget)
-        if (newAppt.phone && newAppt.remindersEnabled) {
-          const dateStr = startDateTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-          const timeStr = newAppt.time;
+        // Format Name: First word only, Capitalized
+        const firstName = newAppt.client.split(' ')[0];
+        const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 
-          const message = `Hola ${newAppt.client}!\n\n✅ Tu cita ha sido confirmada.\n\n📅 ${dateStr}\n⏰ ${timeStr}\n💇‍♀️ Con ${newAppt.stylist}\n\nNos vemos pronto! 👋`;
+        const dateStr = startDateTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        const timeStr = newAppt.time;
 
-          // Send async (don't block UI)
-          fetch('/api/whatsapp/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              phone: newAppt.phone,
-              message
-            })
-          }).then(res => {
-            if (!res.ok) console.warn('Failed to send WhatsApp confirmation');
-          }).catch(err => console.error('WhatsApp Error:', err));
+        // Calculate if subsequent reminder is needed (if > 24h from now)
+        // Actually user requested: "if > 24h" logic for the text "Te enviaremos otro recordatorio..."
+        // Standard reminder is sent at 19:00 (7PM) the day before.
+        // So if (Appointment Time - Current Time) > 24h, we will likely send a reminder.
+        // Let's keep it simple: if appointment is not today or tomorrow, we show the text.
+
+        const now = new Date();
+        const isToday = startDateTime.toDateString() === now.toDateString();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const isTomorrow = startDateTime.toDateString() === tomorrow.toDateString();
+
+        let reminderText = "";
+        // Logic: If appt is NOT today and NOT tomorrow, we definedly have skipped a "day before" 7PM slot, so message will be sent.
+        // If appt is Tomorrow, the cron run for "Tomorrow" might have already passed (if it runs at 7PM). 
+        // Assuming we want to be safe: show this text if the appointment is further than "Tomorrow".
+        if (!isToday && !isTomorrow) {
+          reminderText = "\n\nTe enviaremos otro recordatorio el día previo a su cita.";
         }
+
+        const message = `Hola ${formattedName}, hemos creado tu cita:\n\n${dateStr} a las ${timeStr} con ${newAppt.stylist}.${reminderText}\n\nGracias y hasta pronto!`;
+
+        // Send async (don't block UI)
+        fetch('/api/whatsapp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: newAppt.phone,
+            message
+          })
+        }).then(res => {
+          if (!res.ok) console.warn('Failed to send WhatsApp confirmation');
+        }).catch(err => console.error('WhatsApp Error:', err));
       }
 
       // Refresh appointments from server
