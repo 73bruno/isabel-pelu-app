@@ -61,6 +61,8 @@ export async function wahaRequest(endpoint: string, method: string, body?: any) 
         'accept': 'application/json',
     };
 
+    console.log(`[WAHA DEBUG] Connecting to: ${WAHA_URL}/api/${endpoint} | Key Length: ${API_KEY ? API_KEY.length : 'NONE'}`);
+
     if (API_KEY) {
         headers['X-Api-Key'] = API_KEY;
     }
