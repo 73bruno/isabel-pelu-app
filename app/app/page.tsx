@@ -417,7 +417,8 @@ export default function Home() {
 
         // WhatsApp Confirmation (Fire & Forget)
         // Format Name: First word only, Capitalized
-        const firstName = newAppt.client.split(' ')[0];
+        // Format Name: First word only, Capitalized
+        const firstName = newAppt.client.trim().split(/\s+/)[0];
         const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 
         const dateStr = startDateTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });

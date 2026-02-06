@@ -107,7 +107,8 @@ export async function GET(request: Request) {
                             : '00:00';
 
                         // Format Client Name (First word, Capitalized)
-                        const firstName = clientName.split(' ')[0];
+                        // Format Client Name (First word, Capitalized)
+                        const firstName = clientName.trim().split(/\s+/)[0];
                         const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 
                         // Construct message (Professional & Minimalist)
