@@ -4,9 +4,24 @@ import path from 'path';
 // Load service account credentials
 const SERVICE_ACCOUNT_PATH = path.join(process.cwd(), 'service-account.json');
 
+// Helper to get credentials
+function getCredentials() {
+    if (process.env.GOOGLE_SERVICE_ACCOUNT) {
+        try {
+            return JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+        } catch (e) {
+            console.error('Failed to parse GOOGLE_SERVICE_ACCOUNT');
+            return undefined;
+        }
+    }
+    return undefined;
+}
+
+const credentials = getCredentials();
+
 // Create auth client
 const auth = new google.auth.GoogleAuth({
-    keyFile: SERVICE_ACCOUNT_PATH,
+    ...(credentials ? { credentials } : { keyFile: SERVICE_ACCOUNT_PATH }),
     scopes: [
         'https://www.googleapis.com/auth/calendar',
         'https://www.googleapis.com/auth/contacts.readonly',
