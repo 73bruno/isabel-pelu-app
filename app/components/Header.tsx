@@ -109,13 +109,41 @@ export default function Header({
         {/* Date Navigator */}
         <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-1">
           <button
+            disabled={(() => {
+              const today = new Date();
+              const startOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+              // Check if current view is already at or before start of month
+              // Simple logic: if selectedDate is in current month (or before), and we go back...
+              // Actually easier: Calculate target date inside onClick, but for disabled state:
+              // If we are in Day mode, and date is <= 1st of month?
+              // Or simply: restrict navigating to months OLDER than current month.
+              // Let's implement robust check.
+
+              // If we are seeing days from previous month, allow going forward but not back further?
+              // User said "cuando se pasa al mes anterior ya no se pueda acceder".
+              // So disable BACK button if `selectedDate` < `startOfCurrentMonth`? No, if `selectedDate` is IN current month, we probably shouldn't go back to prev month.
+
+              // Let's assume standard behavior: Can't go to dates < 1st of current Month.
+              const checkDate = new Date(selectedDate);
+              // If viewMode is week, check start of week.
+              // If day, check day.
+
+              // If we are already close to the limit
+              return checkDate <= startOfCurrentMonth || (checkDate.getMonth() === today.getMonth() && checkDate.getFullYear() === today.getFullYear() && checkDate.getDate() === 1);
+            })()}
             onClick={() => {
               const newDate = new Date(selectedDate);
               const diff = viewMode === 'week' ? 7 : 1;
               newDate.setDate(newDate.getDate() - diff);
+
+              const today = new Date();
+              const startOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+              if (newDate < startOfCurrentMonth) return; // Prevention
+
               onDateChange(newDate);
             }}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md text-gray-500 dark:text-gray-400 transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md text-gray-500 dark:text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             ←
           </button>
