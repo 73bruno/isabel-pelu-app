@@ -31,7 +31,7 @@ export default function Header({
       <div className="flex items-center gap-4 justify-between sm:justify-start">
         {/* Logo Container */}
         <div className="flex items-center gap-3">
-          <div className="relative h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border-2 border-gold shadow-md shrink-0">
+          <div className="relative h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border-2 border-gold shadow-md shrink-0 bg-white/10">
             <img
               src="/logo.avif"
               alt="Isabel Peluquería"
@@ -39,10 +39,10 @@ export default function Header({
             />
           </div>
           <div>
-            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-gray-800 dark:text-gray-100 leading-tight font-serif">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight font-serif drop-shadow-sm">
               Almodóvar <span className="text-gold-dark dark:text-gold italic">Peluqueras</span>
             </h1>
-            <p className="text-[10px] sm:text-xs text-metal-dark dark:text-gray-400 uppercase tracking-widest letter-spacing-2">Gestión de Citas</p>
+            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 uppercase tracking-widest letter-spacing-2 font-medium">Gestión de Citas</p>
           </div>
         </div>
 
@@ -107,27 +107,38 @@ export default function Header({
         </button>
 
         {/* Date Navigator */}
-        <div className="flex items-center bg-white rounded-lg border border-gray-200 shadow-sm p-1">
+        <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-1">
           <button
             onClick={() => {
               const newDate = new Date(selectedDate);
-              newDate.setDate(newDate.getDate() - 1);
+              const diff = viewMode === 'week' ? 7 : 1;
+              newDate.setDate(newDate.getDate() - diff);
               onDateChange(newDate);
             }}
-            className="p-2 hover:bg-gray-100 rounded-md text-gray-500"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md text-gray-500 dark:text-gray-400 transition-colors"
           >
             ←
           </button>
-          <div className="px-4 font-medium text-sm sm:text-base text-gray-700 min-w-[140px] text-center capitalize">
-            {format(selectedDate, "EEEE, d MMMM", { locale: es })}
+          <div className="px-4 font-medium text-sm sm:text-base text-gray-700 dark:text-gray-200 min-w-[140px] text-center capitalize">
+            {viewMode === 'week' ? (
+              <>
+                Semana {format(selectedDate, "w", { locale: es })}
+                <span className="block text-xs opacity-70">
+                  {format(selectedDate, "MMM yyyy", { locale: es })}
+                </span>
+              </>
+            ) : (
+              format(selectedDate, "EEEE, d MMMM", { locale: es })
+            )}
           </div>
           <button
             onClick={() => {
               const newDate = new Date(selectedDate);
-              newDate.setDate(newDate.getDate() + 1);
+              const diff = viewMode === 'week' ? 7 : 1;
+              newDate.setDate(newDate.getDate() + diff);
               onDateChange(newDate);
             }}
-            className="p-2 hover:bg-gray-100 rounded-md text-gray-500"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md text-gray-500 dark:text-gray-400 transition-colors"
           >
             →
           </button>

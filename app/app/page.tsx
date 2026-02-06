@@ -135,13 +135,16 @@ export default function Home() {
       // Build mappings from config
       stylistConfigs.forEach(config => {
         if (config.calendarId) {
-          calendarToStylist[config.calendarId] = config.name;
+          calendarToStylist[config.calendarId.toLowerCase()] = config.name;
         }
         localStylistColors[config.name] = config.color;
       });
 
+      console.log('Mapping Debug:', { calendarToStylist, availableCalendars: Object.keys(data.calendars) });
+
       Object.entries(data.calendars).forEach(([calendarKey, events]: [string, any]) => {
-        const stylistName = calendarToStylist[calendarKey] || calendarKey;
+        // Try exact match matching or lowercase match
+        const stylistName = calendarToStylist[calendarKey] || calendarToStylist[calendarKey.toLowerCase()] || calendarKey;
 
         events.forEach((event: any) => {
           // Calculate duration from start/end times
@@ -163,6 +166,8 @@ export default function Home() {
           });
         });
       });
+
+      console.log('Processed Appointments:', allAppointments.map(a => ({ id: a.id, stylist: a.stylist, time: a.time })));
 
       setAppointments(allAppointments);
     } catch (err) {
@@ -332,7 +337,12 @@ export default function Home() {
       }
 
       // Refresh appointments from server
-      await fetchAppointments(selectedDate);
+      if (viewMode === 'week') {
+        const weekDays = getWeekDays(selectedDate);
+        await fetchWeekAppointments(weekDays);
+      } else {
+        await fetchAppointments(selectedDate);
+      }
     } catch (err) {
       console.error('Error deleting appointment:', err);
       alert('Error al eliminar la cita. Por favor, inténtalo de nuevo.');
@@ -410,7 +420,7 @@ export default function Home() {
           const dateStr = startDateTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
           const timeStr = newAppt.time;
 
-          const message = `✨ Hola ${newAppt.client}! ✨\n\n✅ Tu cita ha sido confirmada.\n\n📅 ${dateStr}\n⏰ ${timeStr}\n💇‍♀️ Con ${newAppt.stylist}\n\n📍 Almodóvar Peluqueros\n\nNos vemos pronto! 👋`;
+          const message = `Hola ${newAppt.client}!\n\n✅ Tu cita ha sido confirmada.\n\n📅 ${dateStr}\n⏰ ${timeStr}\n💇‍♀️ Con ${newAppt.stylist}\n\nNos vemos pronto! 👋`;
 
           // Send async (don't block UI)
           fetch('/api/whatsapp/send', {
@@ -427,7 +437,12 @@ export default function Home() {
       }
 
       // Refresh appointments from server
-      await fetchAppointments(selectedDate);
+      if (viewMode === 'week') {
+        const weekDays = getWeekDays(selectedDate);
+        await fetchWeekAppointments(weekDays);
+      } else {
+        await fetchAppointments(selectedDate);
+      }
     } catch (err) {
       console.error('Error saving appointment:', err);
       alert('Error al guardar la cita. Por favor, inténtalo de nuevo.');

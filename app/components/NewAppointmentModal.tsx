@@ -81,8 +81,8 @@ const VoiceInput = ({ isTextArea, onVoiceChange, onClear, className, ...props }:
                 className={`
                     w-full border rounded-lg focus:ring-2 focus:ring-gold outline-none transition-all font-medium
                     pl-10 pr-10 ${className || ''} ${isTextArea ? 'resize-none py-3' : 'py-3'}
+                    bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-500
                 `}
-                style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }}
             />
 
             {/* Right Action: Voice Microphone */}
@@ -500,7 +500,7 @@ export default function NewAppointmentModal({
                                         <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.224-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
                                         </svg>
-                                        <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">
                                             Teléfono WhatsApp
                                         </span>
                                     </div>
@@ -509,7 +509,7 @@ export default function NewAppointmentModal({
                                         value={clientPhone}
                                         onChange={(e) => handlePhoneChange(e.target.value)}
                                         placeholder="Ej: 612 345 678"
-                                        className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-green-500 outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400"
                                     />
                                 </div>
 
@@ -615,8 +615,7 @@ export default function NewAppointmentModal({
                                 type="time"
                                 value={time}
                                 onChange={(e) => { setTime(e.target.value); setTimeError(null); }}
-                                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-gold outline-none ${timeError ? 'border-red-500 ring-1 ring-red-500' : ''}`}
-                                style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-main)', borderColor: timeError ? '#ef4444' : 'var(--border-color)' }}
+                                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-gold outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white ${timeError ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-200 dark:border-gray-700'}`}
                             />
                             {timeError && (
                                 <p className="text-xs text-red-500 mt-1">{timeError}</p>
@@ -627,8 +626,7 @@ export default function NewAppointmentModal({
                             <select
                                 value={duration}
                                 onChange={(e) => setDuration(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-gold outline-none"
-                                style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }}
+                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-gold outline-none bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
                             >
                                 <option value="15">15 min</option>
                                 <option value="30">30 min</option>
