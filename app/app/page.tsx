@@ -391,6 +391,8 @@ export default function Home() {
             service: newAppt.service || '',
             startTime: startDateTime.toISOString(),
             duration: newAppt.duration || 30,
+            phone: newAppt.phone,
+            reminders: newAppt.remindersEnabled,
           }),
         });
 
@@ -408,6 +410,8 @@ export default function Home() {
             service: newAppt.service || '',
             startTime: startDateTime.toISOString(),
             duration: newAppt.duration || 30,
+            phone: newAppt.phone,
+            reminders: newAppt.remindersEnabled,
           }),
         });
 
@@ -416,54 +420,49 @@ export default function Home() {
         }
 
         // WhatsApp Confirmation (Fire & Forget)
-        // Format Name: First word only, Capitalized
-        // Format Name: First word only, Capitalized
-        const firstName = newAppt.client.trim().split(/\s+/)[0];
-        const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+        // Only if reminders are enabled and we have a phone number
+        if (newAppt.remindersEnabled && newAppt.phone) {
+          // Format Name: First word only, Capitalized
+          const firstName = newAppt.client.trim().split(/\s+/)[0];
+          const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 
-        const dateStr = startDateTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-        const timeStr = newAppt.time;
+          const dateStr = startDateTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+          const timeStr = newAppt.time;
 
-        // Calculate if subsequent reminder is needed (if > 24h from now)
-        // Actually user requested: "if > 24h" logic for the text "Te enviaremos otro recordatorio..."
-        // Standard reminder is sent at 19:00 (7PM) the day before.
-        // So if (Appointment Time - Current Time) > 24h, we will likely send a reminder.
-        // Let's keep it simple: if appointment is not today or tomorrow, we show the text.
+          // Calculate if subsequent reminder is needed (if > 24h from now)
+          const now = new Date();
+          const isToday = startDateTime.toDateString() === now.toDateString();
+          const tomorrow = new Date(now);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const isTomorrow = startDateTime.toDateString() === tomorrow.toDateString();
 
-        const now = new Date();
-        const isToday = startDateTime.toDateString() === now.toDateString();
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const isTomorrow = startDateTime.toDateString() === tomorrow.toDateString();
+          let reminderText = "";
+          if (!isToday && !isTomorrow) {
+            reminderText = "\n\nTe enviaremos otro recordatorio el día previo a su cita.";
+          }
 
-        let reminderText = "";
-        // Logic: If appt is NOT today and NOT tomorrow, we definedly have skipped a "day before" 7PM slot, so message will be sent.
-        // If appt is Tomorrow, the cron run for "Tomorrow" might have already passed (if it runs at 7PM). 
-        // Assuming we want to be safe: show this text if the appointment is further than "Tomorrow".
-        if (!isToday && !isTomorrow) {
-          reminderText = "\n\nTe enviaremos otro recordatorio el día previo a su cita.";
+          // Anti-Blocking Variations
+          const greetings = ['Hola', 'Buenas', 'Estimado/a'];
+          const closings = ['Gracias y hasta pronto!', 'Nos vemos pronto!', 'Gracias por confiar en nosotros.', 'Un saludo!'];
+
+          const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+          const closing = closings[Math.floor(Math.random() * closings.length)];
+
+          // ADDED EMOJIS HERE 📅 and ⏰
+          const message = `${greeting} ${formattedName}, hemos creado tu cita:\n\n📅 ${dateStr} a las ⏰ ${timeStr} con ${newAppt.stylist}.${reminderText}\n\n${closing}`;
+
+          // Send async (don't block UI)
+          fetch('/api/whatsapp/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              phone: newAppt.phone,
+              message
+            })
+          }).then(res => {
+            if (!res.ok) console.warn('Failed to send WhatsApp confirmation');
+          }).catch(err => console.error('WhatsApp Error:', err));
         }
-
-        // Anti-Blocking Variations
-        const greetings = ['Hola', 'Buenas', 'Estimado/a'];
-        const closings = ['Gracias y hasta pronto!', 'Nos vemos pronto!', 'Gracias por confiar en nosotros.', 'Un saludo!'];
-
-        const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-        const closing = closings[Math.floor(Math.random() * closings.length)];
-
-        const message = `${greeting} ${formattedName}, hemos creado tu cita:\n\n${dateStr} a las ${timeStr} con ${newAppt.stylist}.${reminderText}\n\n${closing}`;
-
-        // Send async (don't block UI)
-        fetch('/api/whatsapp/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phone: newAppt.phone,
-            message
-          })
-        }).then(res => {
-          if (!res.ok) console.warn('Failed to send WhatsApp confirmation');
-        }).catch(err => console.error('WhatsApp Error:', err));
       }
 
       // Refresh appointments from server
