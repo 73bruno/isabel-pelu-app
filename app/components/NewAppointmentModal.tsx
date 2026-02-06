@@ -198,6 +198,9 @@ export default function NewAppointmentModal({
                 });
                 setIsNewContact(false);
                 setPhoneChanged(false);
+
+                // If editing, use the appointment's reminder setting, default to true
+                setRemindersEnabled(editingAppointment.remindersEnabled !== false);
             } else {
                 // Creation Mode - reset to defaults
                 setClient('');
@@ -280,6 +283,13 @@ export default function NewAppointmentModal({
         setContactSaved(false);
         setShowSuggestions(false);
         setSuggestions([]);
+
+        // Use contact preference if available, else default true
+        if (contact.remindersEnabled !== undefined) {
+            setRemindersEnabled(contact.remindersEnabled);
+        } else {
+            setRemindersEnabled(true);
+        }
     };
 
     // Handle phone change
@@ -494,24 +504,50 @@ export default function NewAppointmentModal({
                         {/* Phone & Contact Management Section */}
                         {client.length > 0 && (
                             <div className="mt-3 p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 space-y-3">
-                                {/* Phone Input */}
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.224-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-                                        </svg>
-                                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">
-                                            Teléfono WhatsApp
-                                        </span>
+
+                                {/* If Contact Selected and Has Phone, Show Summary with Edit Option */}
+                                {selectedContact && !phoneChanged && selectedContact.phone ? (
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Móvil Vinculado</span>
+                                            <span className="text-sm font-medium text-gray-800 dark:text-white flex items-center gap-2">
+                                                <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.224-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" /></svg>
+                                                {selectedContact.phone}
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={() => setPhoneChanged(true)}
+                                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                        >
+                                            Cambiar
+                                        </button>
                                     </div>
-                                    <input
-                                        type="tel"
-                                        value={clientPhone}
-                                        onChange={(e) => handlePhoneChange(e.target.value)}
-                                        placeholder="Ej: 612 345 678"
-                                        className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400"
-                                    />
-                                </div>
+                                ) : (
+                                    /* Phone Input (Visible if New Contact OR Editing) */
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.224-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                                            </svg>
+                                            <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                                                {selectedContact ? 'Modificar Teléfono' : 'Teléfono WhatsApp'}
+                                            </span>
+                                            {phoneChanged && selectedContact && (
+                                                <button onClick={() => {
+                                                    setClientPhone(selectedContact.phone);
+                                                    setPhoneChanged(false);
+                                                }} className="ml-auto text-xs text-gray-400 hover:text-gray-600">Cancelar</button>
+                                            )}
+                                        </div>
+                                        <input
+                                            type="tel"
+                                            value={clientPhone}
+                                            onChange={(e) => handlePhoneChange(e.target.value)}
+                                            placeholder="Ej: 612 345 678"
+                                            className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400"
+                                        />
+                                    </div>
+                                )}
 
                                 {/* Reminders Toggle */}
                                 <div className="flex items-center justify-between py-2 border-t border-gray-200 dark:border-gray-600">
@@ -520,7 +556,11 @@ export default function NewAppointmentModal({
                                     </span>
                                     <button
                                         type="button"
-                                        onClick={() => setRemindersEnabled(!remindersEnabled)}
+                                        onClick={() => {
+                                            setRemindersEnabled(!remindersEnabled);
+                                            // If we toggle this for an existing contact, suggest saving
+                                            if (selectedContact) setPhoneChanged(true); // Reuse this state to trigger update
+                                        }}
                                         className={`relative w-10 h-5 rounded-full transition-colors ${remindersEnabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
                                             }`}
                                     >
@@ -537,7 +577,7 @@ export default function NewAppointmentModal({
                                             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                             </svg>
-                                            Contacto guardado en Google
+                                            Contacto actualizado
                                         </p>
                                     )}
 
@@ -563,7 +603,7 @@ export default function NewAppointmentModal({
                                         </button>
                                     )}
 
-                                    {/* Existing contact with changed phone - offer to update */}
+                                    {/* Existing contact with changed info - offer to update */}
                                     {selectedContact && phoneChanged && !contactSaved && (
                                         <button
                                             type="button"
@@ -581,27 +621,8 @@ export default function NewAppointmentModal({
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                                 </svg>
                                             )}
-                                            Actualizar teléfono en contacto
+                                            Actualizar contacto (Teléfono/Alertas)
                                         </button>
-                                    )}
-
-                                    {/* Info message when no phone */}
-                                    {!clientPhone && !isNewContact && !selectedContact && (
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            📱 Añade el móvil para enviar recordatorios
-                                        </p>
-                                    )}
-
-                                    {/* Reminder status */}
-                                    {clientPhone && remindersEnabled && (
-                                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                                            ✓ Recibirá recordatorio por WhatsApp
-                                        </p>
-                                    )}
-                                    {clientPhone && !remindersEnabled && (
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            Recordatorios desactivados para este cliente
-                                        </p>
                                     )}
                                 </div>
                             </div>
