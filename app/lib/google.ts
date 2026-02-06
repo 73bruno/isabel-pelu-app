@@ -24,7 +24,7 @@ const auth = new google.auth.GoogleAuth({
     ...(credentials ? { credentials } : { keyFile: SERVICE_ACCOUNT_PATH }),
     scopes: [
         'https://www.googleapis.com/auth/calendar',
-        'https://www.googleapis.com/auth/contacts.readonly',
+        'https://www.googleapis.com/auth/contacts',
     ],
 });
 
@@ -63,6 +63,19 @@ export async function getEventsForDate(calendarId: string, date: Date) {
         calendarId,
         timeMin: startOfDay.toISOString(),
         timeMax: endOfDay.toISOString(),
+        singleEvents: true,
+        orderBy: 'startTime',
+    });
+
+    return response.data.items || [];
+}
+
+// Helper: Get events in a date range
+export async function getEventsInRange(calendarId: string, start: Date, end: Date) {
+    const response = await calendar.events.list({
+        calendarId,
+        timeMin: start.toISOString(),
+        timeMax: end.toISOString(),
         singleEvents: true,
         orderBy: 'startTime',
     });

@@ -74,7 +74,9 @@ export async function GET(request: NextRequest) {
 
 // Helper to serialize description
 function serializeDescription(service: string, phone?: string, reminders?: boolean) {
-    if (!phone && !reminders) return service; // Backward compatibility
+    // If phone is missing and reminders is true (default), we allowed plain service string before.
+    // BUT we must support reminders=false.
+    // Normalized logic: Always use JSON for new events or updates to ensure consistency.
     return JSON.stringify({
         s: service, // service
         p: phone,   // phone
@@ -84,22 +86,22 @@ function serializeDescription(service: string, phone?: string, reminders?: boole
 
 // Helper to parse description
 function parseDescription(desc: string | undefined | null) {
-    if (!desc) return { service: '', phone: undefined, reminders: false };
+    if (!desc) return { service: '', phone: undefined, reminders: true }; // Default true
     try {
         const data = JSON.parse(desc);
         if (typeof data === 'object' && data !== null) {
-            // Check if it's our schema (s, p, r) or potentially legacy JSON?
-            // Assuming new schema
             return {
                 service: data.s || data.service || '',
                 phone: data.p || data.phone,
-                reminders: !!(data.r || data.reminders)
+                // If r is undefined, default to TRUE (opt-out model).
+                // If r is explicitly false, it stays false.
+                reminders: data.r !== undefined ? !!data.r : (data.reminders !== undefined ? !!data.reminders : true)
             };
         }
-        return { service: desc, phone: undefined, reminders: false };
+        return { service: desc, phone: undefined, reminders: true }; // Default true
     } catch (e) {
-        // Not JSON, treat as plain text service
-        return { service: desc, phone: undefined, reminders: false };
+        // Not JSON, treat as plain text service. Default reminders to TRUE.
+        return { service: desc, phone: undefined, reminders: true };
     }
 }
 

@@ -112,24 +112,13 @@ export default function Header({
             disabled={(() => {
               const today = new Date();
               const startOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-              // Check if current view is already at or before start of month
-              // Simple logic: if selectedDate is in current month (or before), and we go back...
-              // Actually easier: Calculate target date inside onClick, but for disabled state:
-              // If we are in Day mode, and date is <= 1st of month?
-              // Or simply: restrict navigating to months OLDER than current month.
-              // Let's implement robust check.
 
-              // If we are seeing days from previous month, allow going forward but not back further?
-              // User said "cuando se pasa al mes anterior ya no se pueda acceder".
-              // So disable BACK button if `selectedDate` < `startOfCurrentMonth`? No, if `selectedDate` is IN current month, we probably shouldn't go back to prev month.
+              // Predict target date
+              const targetDate = new Date(selectedDate);
+              const diff = viewMode === 'week' ? 7 : 1;
+              targetDate.setDate(targetDate.getDate() - diff);
 
-              // Let's assume standard behavior: Can't go to dates < 1st of current Month.
-              const checkDate = new Date(selectedDate);
-              // If viewMode is week, check start of week.
-              // If day, check day.
-
-              // If we are already close to the limit
-              return checkDate <= startOfCurrentMonth || (checkDate.getMonth() === today.getMonth() && checkDate.getFullYear() === today.getFullYear() && checkDate.getDate() === 1);
+              return targetDate < startOfCurrentMonth;
             })()}
             onClick={() => {
               const newDate = new Date(selectedDate);
@@ -138,6 +127,7 @@ export default function Header({
 
               const today = new Date();
               const startOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+              startOfCurrentMonth.setHours(0, 0, 0, 0); // normalize
 
               if (newDate < startOfCurrentMonth) return; // Prevention
 

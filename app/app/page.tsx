@@ -100,6 +100,23 @@ export default function Home() {
       } else {
         document.documentElement.classList.remove('dark');
       }
+
+      // Check for Archival trigger
+      const currentMonthKey = `${new Date().getFullYear()}-${new Date().getMonth()}`;
+      const lastArchive = localStorage.getItem('lastArchiveMonth');
+
+      if (lastArchive !== currentMonthKey) {
+        // Trigger Archival in background
+        fetch('/api/archive', { method: 'POST' })
+          .then(res => res.json())
+          .then(data => {
+            console.log('Archival Result:', data);
+            if (data.success) {
+              localStorage.setItem('lastArchiveMonth', currentMonthKey);
+            }
+          })
+          .catch(err => console.error('Archival Trigger Error:', err));
+      }
     }
   }, []);
 
