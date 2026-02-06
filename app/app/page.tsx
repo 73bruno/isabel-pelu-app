@@ -444,7 +444,14 @@ export default function Home() {
           reminderText = "\n\nTe enviaremos otro recordatorio el día previo a su cita.";
         }
 
-        const message = `Hola ${formattedName}, hemos creado tu cita:\n\n${dateStr} a las ${timeStr} con ${newAppt.stylist}.${reminderText}\n\nGracias y hasta pronto!`;
+        // Anti-Blocking Variations
+        const greetings = ['Hola', 'Buenas', 'Estimado/a'];
+        const closings = ['Gracias y hasta pronto!', 'Nos vemos pronto!', 'Gracias por confiar en nosotros.', 'Un saludo!'];
+
+        const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+        const closing = closings[Math.floor(Math.random() * closings.length)];
+
+        const message = `${greeting} ${formattedName}, hemos creado tu cita:\n\n${dateStr} a las ${timeStr} con ${newAppt.stylist}.${reminderText}\n\n${closing}`;
 
         // Send async (don't block UI)
         fetch('/api/whatsapp/send', {

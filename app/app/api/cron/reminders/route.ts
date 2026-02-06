@@ -111,8 +111,15 @@ export async function GET(request: Request) {
                         const firstName = clientName.trim().split(/\s+/)[0];
                         const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 
+                        // Anti-Blocking: Random variations for Greeting and Closing (Professional Tone)
+                        const greetings = ['Hola', 'Buenas', 'Saludos'];
+                        const closings = ['Te esperamos!', 'Nos vemos mañana.', 'Un saludo!', 'Gracias!'];
+
+                        const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+                        const closing = closings[Math.floor(Math.random() * closings.length)];
+
                         // Construct message (Professional & Minimalist)
-                        const message = `Hola ${formattedName}, te recordamos tu cita para mañana:\n\n📅 ${dateStr}\n⏰ ${startTime}\n💇 Con ${stylistName}\n\nTe esperamos!`;
+                        const message = `${greeting} ${formattedName}, te recordamos tu cita para mañana:\n\n📅 ${dateStr}\n⏰ ${startTime}\n💇 Con ${stylistName}\n\n${closing}`;
 
                         // Enviar
                         console.log(`[CRON] Sending reminder to ${clientName} (${phone})...`);

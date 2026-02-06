@@ -125,15 +125,15 @@ export async function sendWhatsAppMessage(phone: string, text: string) {
         const randomJitter = Math.random() * 1000; // +0-1s aleatorio
         await setTimeout(typingTimeBase + randomJitter);
 
-        // 4. Send Message
+        // 4. Stop typing (simulate natural pause before hitting send)
+        await wahaRequest('stopTyping', 'POST', { session, chatId });
+
+        // 5. Send Message
         const result = await wahaRequest('sendText', 'POST', {
             session,
             chatId,
             text,
         });
-
-        // 5. Stop typing (aunque sendText suele cortarlo, es buena práctica asegurar)
-        await wahaRequest('stopTyping', 'POST', { session, chatId });
 
         console.log(`[WAHA SENT] Mensaje enviado a ${normalizePhone(phone)}`);
         return { success: true, data: result };
