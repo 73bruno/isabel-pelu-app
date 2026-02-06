@@ -575,24 +575,7 @@ export default function Home() {
           {viewMode === 'week' && (
             <div className="flex flex-col gap-4 h-full">
               {/* Stylist Legend */}
-              <div className="flex items-center justify-center gap-4 bg-white dark:bg-gray-800 py-2 px-4 rounded-lg shadow-sm">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Leyenda:</span>
-                {activeStylists.map((stylist: StylistConfig) => (
-                  <div key={stylist.id} className="flex items-center gap-2">
-                    <div
-                      className="w-4 h-4 rounded"
-                      style={{
-                        backgroundColor: stylist.color.bg,
-                        borderColor: stylist.color.border,
-                        borderWidth: 2
-                      }}
-                    />
-                    <span className="text-sm font-medium" style={{ color: stylist.color.text }}>
-                      {stylist.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
+
 
               {/* Days Grid */}
               <div className="flex gap-2 h-full overflow-x-auto pb-4">

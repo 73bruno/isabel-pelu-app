@@ -16,7 +16,7 @@ export default function AuthStatus() {
     if (session) {
         return (
             <div className="flex items-center gap-2">
-                <div className="hidden sm:flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <div className="hidden sm:flex items-center gap-2 text-xs text-gray-700 dark:text-gray-200">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="truncate max-w-[120px]">{session.user?.email}</span>
                 </div>

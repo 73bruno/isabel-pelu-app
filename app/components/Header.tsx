@@ -42,7 +42,7 @@ export default function Header({
             <h1 className="text-lg sm:text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight font-serif drop-shadow-sm">
               Almodóvar <span className="text-gold-dark dark:text-gold italic">Peluqueras</span>
             </h1>
-            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 uppercase tracking-widest letter-spacing-2 font-medium">Gestión de Citas</p>
+            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-300 uppercase tracking-widest letter-spacing-2 font-medium">Gestión de Citas</p>
           </div>
         </div>
 
@@ -121,12 +121,20 @@ export default function Header({
           </button>
           <div className="px-4 font-medium text-sm sm:text-base text-gray-700 dark:text-gray-200 min-w-[140px] text-center capitalize">
             {viewMode === 'week' ? (
-              <>
-                Semana {format(selectedDate, "w", { locale: es })}
-                <span className="block text-xs opacity-70">
-                  {format(selectedDate, "MMM yyyy", { locale: es })}
-                </span>
-              </>
+              (() => {
+                const d = new Date(selectedDate);
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
+                const monday = new Date(d.setDate(diff));
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+
+                return (
+                  <span className="text-xs sm:text-sm">
+                    {format(monday, "d MMM", { locale: es })} - {format(sunday, "d MMM", { locale: es })}
+                  </span>
+                );
+              })()
             ) : (
               format(selectedDate, "EEEE, d MMMM", { locale: es })
             )}
@@ -143,15 +151,6 @@ export default function Header({
             →
           </button>
         </div>
-
-        <button
-          onClick={onNewAppointment}
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-900 text-white rounded-lg shadow-lg hover:bg-gray-800 transition-all font-medium text-xs sm:text-sm whitespace-nowrap"
-        >
-          <span>+</span>
-          <span className="hidden sm:inline">Nueva Cita</span>
-          <span className="sm:hidden">Cita</span>
-        </button>
       </div>
     </header>
   );
