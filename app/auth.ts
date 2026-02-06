@@ -52,6 +52,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }),
     ],
     callbacks: {
+        async signIn({ user }) {
+            // Email Whitelist Security
+            const allowedEmails = (process.env.ALLOWED_EMAILS || '').split(',').map(e => e.trim());
+
+            if (allowedEmails.length > 0 && user.email) {
+                return allowedEmails.includes(user.email);
+            }
+            return true; // If no whitelist configured, allow all (or change to false to default block)
+        },
         async jwt({ token, account }) {
             // Initial sign in - store tokens
             if (account) {

@@ -91,11 +91,28 @@ La aplicación Next.js se comunica con esta VPS mediante:
     WAHA_SESSION=default
     ```
 
-## 6. Seguridad y Buenas Prácticas
 
-1.  **Firewall (UFW):** Solo permite tráfico por puertos 22 (SSH) y 3001 (WAHA).
-2.  **Anti-Bloqueo:** La app implementa delays aleatorios y "typing simulation" antes de enviar mensajes para parecer humana.
-3.  **Mode Debug:** En desarrollo, solo envía mensajes a números en la `WHATSAPP_WHITELIST`.
+## 7. Pasos Finales (Producción en Vercel)
+
+### A. Configurar Cron Job (Recordatorios 19:00)
+Una vez desplegada la app en Vercel, configurar el cron en la VPS para llamar al endpoint de recordatorios.
+
+1.  Obtener URL de producción (ej: `https://isabel-pelu-app.vercel.app`).
+2.  Editar crontab en la VPS (`crontab -e`).
+3.  Añadir al final:
+    ```bash
+    # Ejecutar a las 19:00 cada día
+    0 19 * * * curl "https://TU-URL-REAL.vercel.app/api/cron/reminders?key=peluqueria_secret_cron_2026" >> /var/log/cron-reminders.log 2>&1
+    ```
+
+### B. Configurar Google Cloud Console
+Para que el Login de Google funcione en producción:
+
+1.  Ir a [Google Cloud Console](https://console.cloud.google.com/).
+2.  APIs & Services > Credentials.
+3.  Editar el cliente **OAuth 2.0 Web Client**.
+4.  Añadir en **Authorized JavaScript origins**: `https://TU-URL-REAL.vercel.app`
+5.  Añadir en **Authorized redirect URIs**: `https://TU-URL-REAL.vercel.app/api/auth/callback/google`
 
 ---
-*Documento generado el 05/02/2026*
+*Documento generado el 05/02/2026 (Actualizado)*
