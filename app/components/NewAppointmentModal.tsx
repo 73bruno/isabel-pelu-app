@@ -410,6 +410,30 @@ export default function NewAppointmentModal({
             return;
         }
 
+        // Silent Background Update: If contact exists and info changed, update it.
+        if (selectedContact) {
+            const phoneChanged = clientPhone.trim() !== (selectedContact.phone || '').trim();
+            const remindersChanged = selectedContact.remindersEnabled !== undefined && remindersEnabled !== selectedContact.remindersEnabled;
+
+            if (phoneChanged || remindersChanged) {
+                // Fire and forget (or we could await if critical, but user requested "de fondo")
+                // We reuse handleUpdateContact logic but without UI loading states if possible, 
+                // or just call the API directly here to be cleaner.
+                const updatePayload = {
+                    resourceName: selectedContact.resourceName,
+                    phone: clientPhone.trim() || undefined,
+                    remindersEnabled,
+                };
+
+                // Execute silently
+                fetch('/api/contacts', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatePayload),
+                }).catch(err => console.error("Background contact update failed:", err));
+            }
+        }
+
         onSave({
             client,
             stylist,
@@ -611,27 +635,7 @@ export default function NewAppointmentModal({
                                         </button>
                                     )}
 
-                                    {/* Existing contact with changed info - offer to update */}
-                                    {selectedContact && (phoneChanged || reminderChanged) && !contactSaved && (
-                                        <button
-                                            type="button"
-                                            onClick={handleUpdateContact}
-                                            disabled={isSavingContact}
-                                            className="w-full py-2 px-3 text-xs font-medium rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                                        >
-                                            {isSavingContact ? (
-                                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                                </svg>
-                                            ) : (
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                </svg>
-                                            )}
-                                            Actualizar contacto (Teléfono/Alertas)
-                                        </button>
-                                    )}
+                                    {/* Existing contact with changed info - AUTO UPDATES ON SAVE, NO BUTTON NEEDED */}
                                 </div>
                             </div>
                         )}
