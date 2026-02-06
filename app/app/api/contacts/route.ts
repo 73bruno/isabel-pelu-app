@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { people } from '@/lib/google'; // Use Service Account client
+import { auth } from '@/auth';
+import { google } from 'googleapis';
 import Fuse from 'fuse.js';
 
-// GET: Search contacts with fuzzy matching
+// Helper: Get OAuth client from session
+function getOAuthClient(accessToken: string) {
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({ access_token: accessToken });
+    return oauth2Client;
+}
+
+// GET: Search contacts
 export async function GET(request: NextRequest) {
     try {
+        const session = await auth();
+
+        if (!session?.accessToken) {
+            return NextResponse.json(
+                { error: 'No autenticado. Inicia sesión para buscar contactos.', contacts: [] },
+                { status: 401 }
+            );
+        }
+
         const searchParams = request.nextUrl.searchParams;
         const query = searchParams.get('q');
 
@@ -12,10 +29,11 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ contacts: [] });
         }
 
-        // First try Google's native search (Service Account)
-        // Note: Service Account searches its OWN contacts (or domain-wide delegated).
-        // If the contacts are on the user's account, this is where the disconnect was.
-        // Assuming we want to use the CENTRAL contacts.
+        // Use User Session Client
+        const oauth2Client = getOAuthClient(session.accessToken);
+        const people = google.people({ version: 'v1', auth: oauth2Client });
+
+        // Search
         const searchResponse = await people.people.searchContacts({
             query,
             readMask: 'names,phoneNumbers,userDefined',
@@ -42,13 +60,13 @@ export async function GET(request: NextRequest) {
             };
         });
 
-        // If few results, also get all contacts and do fuzzy search
+        // 1. FALLBACK: Fuse.js Fuzzy Search if few results
         if (contacts.length < 5) {
             try {
                 const allContactsResponse = await people.people.connections.list({
                     resourceName: 'people/me',
                     personFields: 'names,phoneNumbers,userDefined',
-                    pageSize: 500,
+                    pageSize: 500, // Reasonable limit
                 });
 
                 const allContacts = (allContactsResponse.data.connections || []).map((person: any) => {
@@ -68,7 +86,7 @@ export async function GET(request: NextRequest) {
                     };
                 }).filter((c: any) => c.name);
 
-                // Fuzzy search with Fuse.js
+                // Fuzzy search
                 const fuse = new Fuse(allContacts, {
                     keys: ['name'],
                     threshold: 0.4,
@@ -80,7 +98,7 @@ export async function GET(request: NextRequest) {
 
                 const fuzzyResults = fuse.search(query);
 
-                // Merge with existing results
+                // Merge
                 const existingIds = new Set(contacts.map((c: any) => c.id));
                 for (const result of fuzzyResults) {
                     if (!existingIds.has(result.item.id)) {
@@ -88,7 +106,8 @@ export async function GET(request: NextRequest) {
                     }
                 }
             } catch (err) {
-                console.error('Error in fuzzy search:', err);
+                console.error('Error in fuzzy search fallback:', err);
+                // Fail silently and return what we have
             }
         }
 
@@ -98,6 +117,14 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ contacts });
     } catch (error: any) {
         console.error('Contacts search error:', error);
+
+        if (error.code === 401 || error.message?.includes('invalid_grant')) {
+            return NextResponse.json(
+                { error: 'Sesión expirada. Por favor, vuelve a iniciar sesión.', contacts: [] },
+                { status: 401 }
+            );
+        }
+
         return NextResponse.json(
             { error: 'Error al buscar contactos', contacts: [] },
             { status: 500 }
@@ -108,12 +135,22 @@ export async function GET(request: NextRequest) {
 // POST: Create new contact
 export async function POST(request: NextRequest) {
     try {
+        const session = await auth();
+
+        if (!session?.accessToken) {
+            return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { name, phone, remindersEnabled = true } = body;
 
         if (!name) {
             return NextResponse.json({ error: 'Nombre requerido' }, { status: 400 });
         }
+
+        // Use User Session Client
+        const oauth2Client = getOAuthClient(session.accessToken);
+        const people = google.people({ version: 'v1', auth: oauth2Client });
 
         // Build contact data
         const contactData: any = {
@@ -153,12 +190,22 @@ export async function POST(request: NextRequest) {
 // PATCH: Update contact
 export async function PATCH(request: NextRequest) {
     try {
+        const session = await auth();
+
+        if (!session?.accessToken) {
+            return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { resourceName, phone, remindersEnabled } = body;
 
         if (!resourceName) {
             return NextResponse.json({ error: 'resourceName requerido' }, { status: 400 });
         }
+
+        // Use User Session Client
+        const oauth2Client = getOAuthClient(session.accessToken);
+        const people = google.people({ version: 'v1', auth: oauth2Client });
 
         // First get current contact to get ETag and existing data
         const currentContact = await people.people.get({

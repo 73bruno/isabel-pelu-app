@@ -465,8 +465,8 @@ export default function Home() {
           const greeting = greetings[Math.floor(Math.random() * greetings.length)];
           const closing = closings[Math.floor(Math.random() * closings.length)];
 
-          // ADDED EMOJIS HERE 📅 and ⏰
-          const message = `${greeting} ${formattedName}, hemos creado tu cita:\n\n📅 ${dateStr} a las ⏰ ${timeStr} con ${newAppt.stylist}.${reminderText}\n\n${closing}`;
+          // ADDED EMOJIS 📅 and ⏰ with explicit line breaks
+          const message = `${greeting} ${formattedName}, hemos confirmado tu cita:\n\n📅 ${dateStr}\n⏰ ${timeStr}${reminderText}\n\n${closing}`;
 
           // Send async (don't block UI)
           fetch('/api/whatsapp/send', {

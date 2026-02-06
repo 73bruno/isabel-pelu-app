@@ -35,11 +35,22 @@ export async function POST(request: NextRequest) {
 
         console.log(`[Archiver] Starting clean up for events before ${threshold.toISOString()}`);
 
-        const archiveDir = path.join(process.cwd(), 'backups');
-        if (!fs.existsSync(archiveDir)) {
-            fs.mkdirSync(archiveDir, { recursive: true });
+        let archiveDir = path.join(process.cwd(), 'backups');
+        let archiveFile = '';
+
+        try {
+            if (!fs.existsSync(archiveDir)) {
+                fs.mkdirSync(archiveDir, { recursive: true });
+            }
+            archiveFile = path.join(archiveDir, 'appointments_archive.csv');
+        } catch (dirErr) {
+            console.warn('[Archiver] Failed to create local backup dir, falling back to /tmp', dirErr);
+            archiveDir = '/tmp';
+            if (!fs.existsSync(archiveDir)) {
+                fs.mkdirSync(archiveDir, { recursive: true });
+            }
+            archiveFile = path.join(archiveDir, 'appointments_archive.csv');
         }
-        const archiveFile = path.join(archiveDir, 'appointments_archive.csv');
 
         // Ensure CSV header exists
         if (!fs.existsSync(archiveFile)) {

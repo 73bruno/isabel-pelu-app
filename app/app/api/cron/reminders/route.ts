@@ -119,7 +119,8 @@ export async function GET(request: Request) {
                         const closing = closings[Math.floor(Math.random() * closings.length)];
 
                         // Construct message (Professional & Minimalist)
-                        const message = `${greeting} ${formattedName}, te recordamos tu cita para mañana:\n\n📅 ${dateStr}\n⏰ ${startTime}\n💇 Con ${stylistName}\n\n${closing}`;
+                        // Explicit \n for line breaks as requested
+                        const message = `${greeting} ${formattedName}, te recordamos tu cita para mañana:\n\n📅 ${dateStr}\n⏰ ${startTime}\n\n${closing}`;
 
                         // Enviar
                         console.log(`[CRON] Sending reminder to ${clientName} (${phone})...`);
