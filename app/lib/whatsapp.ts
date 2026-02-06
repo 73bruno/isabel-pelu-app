@@ -79,7 +79,14 @@ export async function wahaRequest(endpoint: string, method: string, body?: any) 
             throw new Error(`WAHA Error (${response.status}): ${errorText}`);
         }
 
-        return await response.json();
+        const text = await response.text();
+        if (!text) return {}; // Handle empty OK responses
+
+        try {
+            return JSON.parse(text);
+        } catch {
+            return { message: text };
+        }
     } catch (error) {
         console.error(`[WAHA ERROR] Failed to ${method} ${endpoint}:`, error);
         throw error;
