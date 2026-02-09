@@ -277,13 +277,37 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
                                                 {hour}:00
                                             </span>
 
-                                            {/* 15 Minute Markers */}
-                                            <div className="absolute top-[25%] left-12 right-0 border-t border-dashed" style={{ borderColor: 'var(--timeline-dashed)' }}></div>
-                                            <div className="absolute top-[50%] left-10 right-0 border-t" style={{ borderColor: 'var(--timeline-line)' }}></div> {/* 30 min stronger line */}
-                                            <div className="absolute top-[75%] left-12 right-0 border-t border-dashed" style={{ borderColor: 'var(--timeline-dashed)' }}></div>
+                                            {/* Professional Timeline Markers - Visual Hierarchy */}
+                                            {/* 15 min mark - very subtle dotted */}
+                                            <div
+                                                className="absolute top-[25%] left-12 right-2 border-t"
+                                                style={{ borderColor: 'var(--timeline-15min)', borderStyle: 'dotted' }}
+                                            ></div>
 
-                                            {/* Vertical Line */}
-                                            <div className="absolute top-0 bottom-0 left-10 border-r" style={{ borderColor: 'var(--timeline-line)' }}></div>
+                                            {/* 30 min mark - medium solid */}
+                                            <div
+                                                className="absolute top-[50%] left-10 right-0 border-t"
+                                                style={{ borderColor: 'var(--timeline-30min)' }}
+                                            >
+                                                {/* 30 min label - only on non-compact */}
+                                                {!compact && (
+                                                    <span className="absolute -top-2 left-0 text-[9px] font-mono text-gray-400 dark:text-gray-600">
+                                                        :30
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* 45 min mark - very subtle dotted */}
+                                            <div
+                                                className="absolute top-[75%] left-12 right-2 border-t"
+                                                style={{ borderColor: 'var(--timeline-15min)', borderStyle: 'dotted' }}
+                                            ></div>
+
+                                            {/* Vertical Line - stronger for hour structure */}
+                                            <div
+                                                className="absolute top-0 bottom-0 left-10 border-r"
+                                                style={{ borderColor: 'var(--timeline-hour)' }}
+                                            ></div>
                                         </div>
                                     );
                                 })}

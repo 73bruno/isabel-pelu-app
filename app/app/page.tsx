@@ -600,23 +600,7 @@ export default function Home() {
         onUpdateSchedule={setSchedule}
       />
 
-      {/* Mobile Tabs (Only for Day View or Single Stylist) */}
-      <div className="md:hidden px-4 py-2 border-b border-gray-200 bg-white sticky top-[80px] z-40 flex items-center justify-between gap-2 overflow-x-auto">
-        {stylistNames.map((stylist: string, index: number) => (
-          <button
-            key={stylist}
-            onClick={() => setActiveTab(index)}
-            className={`
-                    flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all whitespace-nowrap
-                    ${activeTab === index
-                ? 'bg-gold/10 text-gold-dark ring-1 ring-gold/50 shadow-sm'
-                : 'text-gray-500 hover:bg-gray-50'}
-                `}
-          >
-            {stylist}
-          </button>
-        ))}
-      </div>
+      {/* Mobile tabs moved to Header as pills - removed from here */}
 
       {/* Main Board Area */}
       <div className="flex-1 p-4 md:p-6 overflow-hidden relative">
@@ -651,15 +635,14 @@ export default function Home() {
           {/* LOGIC: DAY VIEW */}
           {viewMode === 'day' && (
             <div className={`flex flex-col md:flex-row gap-4 h-full`}>
-              {stylistNames.map((stylist: string, index: number) => {
-                // Filter based on "All" or match
+              {stylistNames.map((stylist: string) => {
+                // Filter based on stylist selection
+                // On mobile: currentStylist is never "all" (forced by Header)
+                // On desktop: currentStylist can be "all" or specific
                 if (currentStylist !== 'all' && currentStylist !== stylist) return null;
 
-                // Mobile: Only show active tab if All selected
-                const isHiddenMobile = currentStylist === 'all' && activeTab !== index;
-
                 return (
-                  <div key={stylist} className={`${isHiddenMobile ? 'hidden md:flex' : 'flex'} flex-1`}>
+                  <div key={stylist} className="flex flex-1 min-h-[400px] md:min-h-0">
                     <Column
                       name={stylist}
                       appointments={appointments.filter(a => a.stylist === stylist)}
@@ -677,12 +660,17 @@ export default function Home() {
 
           {/* LOGIC: WEEK VIEW */}
           {viewMode === 'week' && (
-            <div className="flex flex-col gap-4 h-full">
-              {/* Stylist Legend */}
-
+            <div className="flex flex-col gap-2 h-full">
+              {/* Mobile Tip */}
+              <div className="md:hidden bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
+                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Desliza horizontalmente para ver todos los días. Gira el móvil para mejor vista.</span>
+              </div>
 
               {/* Days Grid */}
-              <div className="flex gap-2 h-full overflow-x-auto pb-4">
+              <div className="flex gap-2 h-full overflow-x-auto pb-4 snap-x snap-mandatory">
                 {weekDays.map((date) => {
                   const dateKey = formatLocalDate(date);
                   const dayAppointments = weekAppointments[dateKey] || [];
@@ -698,7 +686,10 @@ export default function Home() {
                   if (!businessHours || businessHours.length === 0) return null;
 
                   return (
-                    <div key={dateKey} className={`min-w-[200px] flex-1 ${isToday ? 'ring-2 ring-gold rounded-xl' : ''}`}>
+                    <div
+                      key={dateKey}
+                      className={`min-w-[160px] sm:min-w-[200px] flex-1 snap-start ${isToday ? 'ring-2 ring-gold rounded-xl shadow-lg' : ''}`}
+                    >
                       <Column
                         name={`${date.toLocaleDateString('es-ES', { weekday: 'short' })} ${date.getDate()}`}
                         appointments={filteredAppts}

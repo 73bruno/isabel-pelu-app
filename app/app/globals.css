@@ -3,21 +3,15 @@
 :root {
   /* Base */
   --background: #FAFAFA;
-  /* Light Clean Background */
   --foreground: #374151;
-  /* Dark Grey Text (Gray-700) */
 
   /* Brand Colors */
   --brand-gold: #D4AF37;
-  /* Classic Gold */
   --brand-gold-light: #F3E5AB;
-  /* Champagne */
   --brand-gold-dark: #AA8C2C;
 
   --brand-metal: #9CA3AF;
-  /* Cool Metallic Grey (Gray-400) */
   --brand-metal-dark: #6B7280;
-  /* Gray-500 */
 
   /* Semantic Colors */
   --card-bg: #FFFFFF;
@@ -25,42 +19,48 @@
   --input-bg: #F9FAFB;
   --text-main: #374151;
   --text-secondary: #6B7280;
-  --border-color: #F3F4F6;
-  --timeline-line: #F3F4F6;
+  --border-color: #E5E7EB;
+
+  /* Timeline Granularity */
+  --timeline-hour: #D1D5DB;
+  /* Strong line for full hours */
+  --timeline-30min: #E5E7EB;
+  /* Medium line for 30 mins */
+  --timeline-15min: #F3F4F6;
+  /* Subtle line for 15 mins */
   --timeline-dashed: #F9FAFB;
+
+  /* Logo filter for light mode */
+  --logo-filter: none;
 }
 
 .dark {
   --background: #0B0E14;
-  /* Deep, rich blue-black */
   --foreground: #F3F4F6;
 
   /* Semantic Dark Premium */
   --card-bg: #151921;
-  /* Slightly lighter than bg, rich tone */
   --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
-  /* Deep shadow */
   --input-bg: #1E2330;
   --text-main: #E5E7EB;
-  /* Gray 200 */
   --text-secondary: #9CA3AF;
-  /* Gray 400 */
   --border-color: #2A303C;
-  /* Subtle separation */
-  --timeline-line: #2A303C;
+
+  /* Timeline Dark Granularity */
+  --timeline-hour: #4B5563;
+  --timeline-30min: #374151;
+  --timeline-15min: #2A303C;
   --timeline-dashed: #232833;
 
   --brand-gold: #EAB308;
-  /* Yellow 500 for better visibility in dark */
   --brand-gold-light: #CA8A04;
-  /* Yellow 600 */
   --brand-gold-dark: #FACC15;
-  /* Yellow 400 */
 
   --brand-metal: #4B5563;
-  /* Gray 600 */
   --brand-metal-dark: #9CA3AF;
-  /* Gray 400 */
+
+  /* Logo filter for dark mode - brighten and add contrast */
+  --logo-filter: brightness(1.2) contrast(1.1);
 }
 
 @theme inline {
@@ -97,6 +97,11 @@ body {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
+.dark .glass-metal {
+  background: linear-gradient(135deg, rgba(21, 25, 33, 0.9) 0%, rgba(11, 14, 20, 0.9) 100%);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
 .bg-repeating-linear-stripes-gray {
   background-image: repeating-linear-gradient(45deg,
       #f9fafb,
@@ -111,4 +116,66 @@ body {
       rgba(17, 24, 39, 0.5) 10px,
       rgba(31, 41, 55, 0.5) 10px,
       rgba(31, 41, 55, 0.5) 20px);
+}
+
+/* Logo adaptive styling */
+.logo-adaptive {
+  filter: var(--logo-filter);
+  transition: filter 0.3s ease;
+}
+
+/* Force landscape for week view on mobile */
+@media screen and (max-width: 768px) {
+  .force-landscape {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vh;
+    height: 100vw;
+    transform: rotate(90deg);
+    transform-origin: left top;
+    overflow: auto;
+  }
+}
+
+/* Hide scrollbars but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Timeline markers - professional styling */
+.timeline-marker-hour {
+  border-color: var(--timeline-hour);
+  border-width: 1px;
+}
+
+.timeline-marker-30min {
+  border-color: var(--timeline-30min);
+  border-width: 1px;
+}
+
+.timeline-marker-15min {
+  border-color: var(--timeline-15min);
+  border-width: 1px;
+  border-style: dashed;
 }
