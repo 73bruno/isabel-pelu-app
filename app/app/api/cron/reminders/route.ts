@@ -26,19 +26,22 @@ const CALENDAR_MAP: Record<string, string> = {
 
 // Helper to parse description (duplicated logic from calendar API to avoid circular deps)
 function parseDescription(desc: string | undefined | null) {
-    if (!desc) return { service: '', phone: undefined, reminders: false };
+    if (!desc) return { service: '', phone: undefined, reminders: true }; // Default true
     try {
         const data = JSON.parse(desc);
         if (typeof data === 'object' && data !== null) {
             return {
                 service: data.s || data.service || '',
                 phone: data.p || data.phone,
-                reminders: !!(data.r || data.reminders)
+                // If r is undefined, default to TRUE (opt-out model).
+                // If r is explicitly false, it stays false.
+                reminders: data.r !== undefined ? !!data.r : (data.reminders !== undefined ? !!data.reminders : true)
             };
         }
-        return { service: desc, phone: undefined, reminders: false };
+        return { service: desc, phone: undefined, reminders: true }; // Default true
     } catch (e) {
-        return { service: desc, phone: undefined, reminders: false };
+        // Not JSON, treat as plain text service. Default reminders to TRUE.
+        return { service: desc, phone: undefined, reminders: true };
     }
 }
 

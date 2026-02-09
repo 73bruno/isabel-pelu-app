@@ -17,6 +17,7 @@ interface Appointment {
   color?: string;
   stylist: string;
   phone?: string;
+  remindersEnabled?: boolean;
 }
 
 // Helper: Format date as YYYY-MM-DD in LOCAL timezone (not UTC)
@@ -180,6 +181,8 @@ export default function Home() {
             service: event.service || '',
             color: localStylistColors[stylistName]?.bg || '#E5E7EB',
             stylist: stylistName,
+            phone: event.phone || '',
+            remindersEnabled: event.remindersEnabled,
           });
         });
       });
@@ -276,6 +279,8 @@ export default function Home() {
                 service: event.service || '',
                 color: localStylistColors[stylistName]?.bg || '#E5E7EB',
                 stylist: stylistName,
+                phone: event.phone || '',
+                remindersEnabled: event.remindersEnabled,
               });
             });
           });
@@ -498,6 +503,58 @@ export default function Home() {
     setEditingAppointment(null);
   };
 
+  // Handler for drag-and-drop move
+  const handleMoveAppointment = async (appointment: Appointment, newTime: string) => {
+    try {
+      // Build new start datetime
+      const startDateTime = new Date(selectedDate);
+      const [hours, minutes] = newTime.split(':').map(Number);
+      startDateTime.setHours(hours, minutes, 0, 0);
+
+      // Map stylist name to calendar ID
+      const stylistConfig = stylistConfigs.find(s => s.name === appointment.stylist);
+      let calendarId = stylistConfig ? stylistConfig.calendarId : appointment.stylist.toLowerCase();
+
+      // Fallback for "Peluquera X" naming
+      if (!stylistConfig && appointment.stylist.startsWith('Peluquera ')) {
+        const num = appointment.stylist.replace('Peluquera ', '');
+        if (['4', '5'].includes(num)) {
+          calendarId = `stylist${num}`;
+        }
+      }
+
+      const response = await fetch('/api/calendar', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: appointment.id,
+          stylist: calendarId,
+          clientName: appointment.clientName,
+          service: appointment.service || '',
+          startTime: startDateTime.toISOString(),
+          duration: appointment.duration || 30,
+          phone: appointment.phone,
+          reminders: appointment.remindersEnabled,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al mover la cita');
+      }
+
+      // Refresh appointments
+      if (viewMode === 'week') {
+        const weekDays = getWeekDays(selectedDate);
+        await fetchWeekAppointments(weekDays);
+      } else {
+        await fetchAppointments(selectedDate);
+      }
+    } catch (err) {
+      console.error('Error moving appointment:', err);
+      alert('Error al mover la cita. Por favor, inténtalo de nuevo.');
+    }
+  };
+
   return (
     <main className="min-h-screen flex flex-col font-sans transition-colors duration-300">
       <Header
@@ -608,6 +665,7 @@ export default function Home() {
                       appointments={appointments.filter(a => a.stylist === stylist)}
                       onAddClick={(params) => handleOpenModal(params ? { ...params, stylist } : { time: '', duration: 30, stylist })}
                       onEditClick={handleEditAppointment}
+                      onMoveAppointment={handleMoveAppointment}
                       date={selectedDate}
                       schedule={schedule}
                     />
@@ -651,6 +709,14 @@ export default function Home() {
                         onEditClick={(appt) => {
                           setSelectedDate(date);
                           handleEditAppointment(appt);
+                        }}
+                        onMoveAppointment={(appt, newTime) => {
+                          // For week view, we need to handle the date context
+                          const originalDate = selectedDate;
+                          setSelectedDate(date);
+                          handleMoveAppointment(appt, newTime).finally(() => {
+                            setSelectedDate(originalDate);
+                          });
                         }}
                         date={date}
                         schedule={schedule}

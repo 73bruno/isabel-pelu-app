@@ -191,18 +191,16 @@ export default function NewAppointmentModal({
                 setDuration(String(editingAppointment.duration || 30));
                 setRemindersEnabled(editingAppointment.remindersEnabled !== false);
 
-                // Mark as existing contact (not new)
+                // Mark as existing contact (not new) - include remindersEnabled for change detection
                 setSelectedContact({
                     id: editingAppointment.id,
                     name: editingAppointment.clientName,
-                    phone: editingAppointment.phone || ''
+                    phone: editingAppointment.phone || '',
+                    remindersEnabled: editingAppointment.remindersEnabled !== false
                 });
                 setIsNewContact(false);
                 setPhoneChanged(false);
                 setReminderChanged(false);
-
-                // If editing, use the appointment's reminder setting, default to true
-                setRemindersEnabled(editingAppointment.remindersEnabled !== false);
             } else {
                 // Creation Mode - reset to defaults
                 setClient('');
@@ -399,7 +397,7 @@ export default function NewAppointmentModal({
         return false;
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setTimeError(null); // Clear previous error
 
         if (!client || !time) return;
@@ -410,28 +408,49 @@ export default function NewAppointmentModal({
             return;
         }
 
-        // Silent Background Update: If contact exists and info changed, update it.
-        if (selectedContact) {
-            const phoneChanged = clientPhone.trim() !== (selectedContact.phone || '').trim();
-            const remindersChanged = selectedContact.remindersEnabled !== undefined && remindersEnabled !== selectedContact.remindersEnabled;
+        // Background Contact Update Logic
+        // Case 1: selectedContact with resourceName (from autocomplete) - direct update
+        // Case 2: editing existing appointment without resourceName - search then update
+        const shouldUpdateContact = (phoneChanged || reminderChanged) && client.trim().length > 0;
 
-            if (phoneChanged || remindersChanged) {
-                // Fire and forget (or we could await if critical, but user requested "de fondo")
-                // We reuse handleUpdateContact logic but without UI loading states if possible, 
-                // or just call the API directly here to be cleaner.
-                const updatePayload = {
-                    resourceName: selectedContact.resourceName,
-                    phone: clientPhone.trim() || undefined,
-                    remindersEnabled,
-                };
+        if (shouldUpdateContact) {
+            // Fire and forget - don't block the save
+            (async () => {
+                try {
+                    let resourceName = selectedContact?.resourceName;
 
-                // Execute silently
-                fetch('/api/contacts', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatePayload),
-                }).catch(err => console.error("Background contact update failed:", err));
-            }
+                    // If no resourceName (editing old appointment), search for the contact first
+                    if (!resourceName && client.trim()) {
+                        const searchRes = await fetch(`/api/contacts?q=${encodeURIComponent(client.trim())}`);
+                        if (searchRes.ok) {
+                            const searchData = await searchRes.json();
+                            // Find exact match by name
+                            const match = searchData.contacts?.find(
+                                (c: Contact) => c.name.toLowerCase() === client.trim().toLowerCase()
+                            );
+                            if (match?.resourceName) {
+                                resourceName = match.resourceName;
+                            }
+                        }
+                    }
+
+                    // If we found a resourceName, update the contact
+                    if (resourceName) {
+                        await fetch('/api/contacts', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                resourceName,
+                                phone: clientPhone.trim() || undefined,
+                                remindersEnabled,
+                            }),
+                        });
+                        console.log('[Contact] Updated successfully');
+                    }
+                } catch (err) {
+                    console.error('[Contact] Background update failed:', err);
+                }
+            })();
         }
 
         onSave({
