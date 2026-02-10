@@ -10,23 +10,13 @@ const CALENDARS: Record<string, string> = {
     stylist5: process.env.CALENDARIO_5 || '',
 };
 
-// Simple in-memory cache
-// Key: "YYYY-MM-DD", Value: { data: Event[], timestamp: number }
-const CACHE: Map<string, { data: any, timestamp: number }> = new Map();
-const CACHE_TTL_MS = 60 * 1000; // 1 minute cache
-
 // GET: Fetch events for a date
+// Cache is handled client-side. Server always fetches fresh data.
 export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams;
         const dateStr = searchParams.get('date') || new Date().toISOString();
         const dateKey = dateStr.split('T')[0];
-
-        // Check cache
-        const cached = CACHE.get(dateKey);
-        if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
-            return NextResponse.json(cached.data);
-        }
 
         const date = new Date(dateStr);
 
@@ -50,10 +40,12 @@ export async function GET(request: NextRequest) {
             },
         };
 
-        // Update cache
-        CACHE.set(dateKey, { data: responseData, timestamp: Date.now() });
-
-        return NextResponse.json(responseData);
+        // Set Cache-Control to prevent browser/CDN caching of dynamic data
+        return NextResponse.json(responseData, {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate',
+            },
+        });
     } catch (error: any) {
         console.error('Calendar GET error:', error);
 
@@ -74,14 +66,13 @@ export async function GET(request: NextRequest) {
 
 // Helper to serialize description
 function serializeDescription(service: string, phone?: string, reminders?: boolean) {
-    // If phone is missing and reminders is true (default), we allowed plain service string before.
-    // BUT we must support reminders=false.
-    // Normalized logic: Always use JSON for new events or updates to ensure consistency.
-    return JSON.stringify({
-        s: service, // service
-        p: phone,   // phone
-        r: reminders // reminders enabled
-    });
+    const data: any = {};
+    if (service) data.s = service;
+    if (phone) data.p = phone;
+    // Default reminders to true (opt-out model)
+    data.r = reminders !== undefined ? (reminders ? 1 : 0) : 1;
+
+    return JSON.stringify(data);
 }
 
 // Helper to parse description
@@ -93,8 +84,6 @@ function parseDescription(desc: string | undefined | null) {
             return {
                 service: data.s || data.service || '',
                 phone: data.p || data.phone,
-                // If r is undefined, default to TRUE (opt-out model).
-                // If r is explicitly false, it stays false.
                 reminders: data.r !== undefined ? !!data.r : (data.reminders !== undefined ? !!data.reminders : true)
             };
         }
@@ -107,9 +96,6 @@ function parseDescription(desc: string | undefined | null) {
 
 // POST: Create a new event
 export async function POST(request: NextRequest) {
-    // Invalidate cache on write
-    CACHE.clear();
-
     try {
         const body = await request.json();
         const { stylist, clientName, service, startTime, duration = 60, phone, reminders } = body;
@@ -148,9 +134,6 @@ export async function POST(request: NextRequest) {
 
 // PUT: Update an existing event
 export async function PUT(request: NextRequest) {
-    // Invalidate cache on write
-    CACHE.clear();
-
     try {
         const body = await request.json();
         const { eventId, stylist, clientName, service, startTime, duration = 60, phone, reminders } = body;
@@ -197,9 +180,6 @@ export async function PUT(request: NextRequest) {
 
 // DELETE: Delete an event
 export async function DELETE(request: NextRequest) {
-    // Invalidate cache on write
-    CACHE.clear();
-
     try {
         const searchParams = request.nextUrl.searchParams;
         const eventId = searchParams.get('eventId');

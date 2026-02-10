@@ -16,6 +16,8 @@ interface HeaderProps {
   onStylistChange: (stylist: string) => void;
   onOpenSettings: (tab?: 'general' | 'stylists' | 'schedule') => void;
   stylists?: string[];
+  silentMode?: boolean;
+  onSilentModeChange?: (silent: boolean) => void;
 }
 
 export default function Header({
@@ -27,7 +29,9 @@ export default function Header({
   currentStylist,
   onStylistChange,
   onOpenSettings,
-  stylists
+  stylists,
+  silentMode,
+  onSilentModeChange
 }: HeaderProps) {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -63,7 +67,7 @@ export default function Header({
             <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-black/5 dark:ring-white/10"></div>
           </div>
           <div>
-            <h1 className="text-base sm:text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight font-serif">
+            <h1 className="text-base sm:text-xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight font-serif">
               Almodóvar <span className="text-gold-dark dark:text-gold italic">Peluqueras</span>
             </h1>
             <p className="text-[9px] sm:text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest font-medium">
@@ -121,8 +125,8 @@ export default function Header({
               key={s}
               onClick={() => onStylistChange(s)}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${currentStylist === s
-                  ? 'bg-gold text-gray-900 shadow-md'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                ? 'bg-gold text-gray-900 shadow-md'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
             >
               {s}
@@ -135,6 +139,27 @@ export default function Header({
 
         {/* Auth Status - Google Login for Contacts */}
         <AuthStatus />
+
+        {/* Silent Mode Toggle */}
+        <button
+          onClick={() => onSilentModeChange?.(!silentMode)}
+          className={`p-2 rounded-lg transition-colors ${silentMode
+              ? 'text-amber-600 bg-amber-100 dark:bg-amber-900/50 dark:text-amber-400'
+              : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+            }`}
+          title={silentMode ? 'Modo Silencioso ACTIVO — click para desactivar' : 'Activar Modo Silencioso (sin WhatsApp)'}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {silentMode ? (
+              <>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+              </>
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            )}
+          </svg>
+        </button>
 
         {/* Settings Button */}
         <button

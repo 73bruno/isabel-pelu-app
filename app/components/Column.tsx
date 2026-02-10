@@ -70,11 +70,16 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
     const [dragCurrent, setDragCurrent] = useState<{ y: number, duration: number } | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Drag State for MOVE
+    // Drag State for MOVE - with threshold
     const [movingAppointment, setMovingAppointment] = useState<Appointment | null>(null);
     const [movePreviewTime, setMovePreviewTime] = useState<string | null>(null);
     const [showMoveConfirm, setShowMoveConfirm] = useState(false);
     const [pendingMove, setPendingMove] = useState<{ appointment: Appointment, newTime: string } | null>(null);
+
+    // Move threshold state - prevents accidental moves
+    const MOVE_THRESHOLD = 20; // pixels of movement required before activating move
+    const [moveCandidate, setMoveCandidate] = useState<{ appt: Appointment, startY: number } | null>(null);
+    const [isMoveActive, setIsMoveActive] = useState(false);
 
     const getTimeFromY = (y: number) => {
         const minutesFromStart = y / pixelsPerMinute;
@@ -95,12 +100,12 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
         return `${finalHours.toString().padStart(2, '0')}:${finalMinutes.toString().padStart(2, '0')}`;
     };
 
-    // Handle appointment drag start (for moving)
-    const handleAppointmentDragStart = (e: React.MouseEvent, appt: Appointment) => {
+    // Handle mousedown on appointment card — just records candidate, no move yet
+    const handleAppointmentMouseDown = (e: React.MouseEvent, appt: Appointment) => {
         e.preventDefault();
         e.stopPropagation();
-        setMovingAppointment(appt);
-        setMovePreviewTime(appt.time);
+        setMoveCandidate({ appt, startY: e.clientY });
+        setIsMoveActive(false);
     };
 
     // Handle mouse down on empty area (for creating)
@@ -119,7 +124,7 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
 
         // Block creation if starting outside business hours
         if (!isBusinessHour(date, hour, schedule)) {
-            return; // Silently ignore - the visual indication (gray stripes) is enough
+            return;
         }
 
         setIsDragging(true);
@@ -134,8 +139,20 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
         const scrollTop = containerRef.current.scrollTop;
         const clientY = e.clientY - rect.top + scrollTop;
 
-        // Handle moving existing appointment
-        if (movingAppointment) {
+        // Handle move candidate — check threshold before activating
+        if (moveCandidate && !isMoveActive) {
+            const deltaY = Math.abs(e.clientY - moveCandidate.startY);
+            if (deltaY > MOVE_THRESHOLD) {
+                // Threshold exceeded — activate move mode
+                setIsMoveActive(true);
+                setMovingAppointment(moveCandidate.appt);
+                setMovePreviewTime(moveCandidate.appt.time);
+            }
+            return;
+        }
+
+        // Handle active move
+        if (isMoveActive && movingAppointment) {
             const newTime = getTimeFromY(clientY);
             setMovePreviewTime(newTime);
             return;
@@ -154,9 +171,15 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
     };
 
     const handleMouseUp = () => {
-        // Handle move completion
-        if (movingAppointment && movePreviewTime && movePreviewTime !== movingAppointment.time) {
-            // Show confirmation dialog
+        // If we had a move candidate but never exceeded threshold — it's a click (edit)
+        if (moveCandidate && !isMoveActive) {
+            if (onEditClick) onEditClick(moveCandidate.appt);
+            setMoveCandidate(null);
+            return;
+        }
+
+        // Handle completed move
+        if (isMoveActive && movingAppointment && movePreviewTime && movePreviewTime !== movingAppointment.time) {
             setPendingMove({ appointment: movingAppointment, newTime: movePreviewTime });
             setShowMoveConfirm(true);
         }
@@ -166,12 +189,14 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
             onAddClick({ time: dragStart.time, duration: dragCurrent.duration });
         }
 
-        // Reset all drag states
+        // Reset all states
         setIsDragging(false);
         setDragStart(null);
         setDragCurrent(null);
         setMovingAppointment(null);
         setMovePreviewTime(null);
+        setMoveCandidate(null);
+        setIsMoveActive(false);
     };
 
     const confirmMove = () => {
@@ -357,12 +382,8 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
                                     return (
                                         <div
                                             key={appt.id}
-                                            onMouseDown={(e) => handleAppointmentDragStart(e, appt)}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (!movingAppointment && onEditClick) onEditClick(appt);
-                                            }}
-                                            className={`appointment-card absolute rounded-lg border-l-4 hover:z-30 transition-all overflow-hidden flex flex-col justify-start shadow-sm hover:shadow-xl hover:scale-[1.02] group pointer-events-auto ${isBeingMoved ? 'opacity-50 cursor-grabbing' : 'cursor-grab'}`}
+                                            onMouseDown={(e) => handleAppointmentMouseDown(e, appt)}
+                                            className={`appointment-card absolute rounded-lg border-l-4 hover:z-30 transition-all overflow-hidden flex flex-col justify-start shadow-sm hover:shadow-xl hover:scale-[1.02] group pointer-events-auto ${isBeingMoved ? 'opacity-50 cursor-grabbing' : 'cursor-pointer'}`}
                                             style={{
                                                 top: `${startMinutesFromBase * pixelsPerMinute}px`,
                                                 height: `${appt.duration * pixelsPerMinute}px`,
