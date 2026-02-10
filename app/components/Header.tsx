@@ -70,7 +70,7 @@ export default function Header({
             <h1 className="text-base sm:text-xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight font-serif">
               Almodóvar <span className="text-gold-dark dark:text-gold italic">Peluqueras</span>
             </h1>
-            <p className="text-[9px] sm:text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest font-medium">
+            <p className="text-[9px] sm:text-xs text-gray-500 dark:text-gray-300 uppercase tracking-widest font-medium">
               Gestión de Citas
             </p>
           </div>
@@ -144,8 +144,8 @@ export default function Header({
         <button
           onClick={() => onSilentModeChange?.(!silentMode)}
           className={`p-2 rounded-lg transition-colors ${silentMode
-              ? 'text-amber-600 bg-amber-100 dark:bg-amber-900/50 dark:text-amber-400'
-              : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+            ? 'text-amber-600 bg-amber-100 dark:bg-amber-900/50 dark:text-amber-400'
+            : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}
           title={silentMode ? 'Modo Silencioso ACTIVO — click para desactivar' : 'Activar Modo Silencioso (sin WhatsApp)'}
         >

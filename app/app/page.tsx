@@ -421,7 +421,7 @@ export default function Home() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             eventId: newAppt.id,
-            stylist: calendarId, // Send ID, not name
+            stylist: calendarId,
             clientName: newAppt.client,
             service: newAppt.service || '',
             startTime: startDateTime.toISOString(),
@@ -440,7 +440,7 @@ export default function Home() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            stylist: calendarId, // Send ID, not name
+            stylist: calendarId,
             clientName: newAppt.client,
             service: newAppt.service || '',
             startTime: startDateTime.toISOString(),
@@ -453,51 +453,65 @@ export default function Home() {
         if (!response.ok) {
           throw new Error('Error al crear la cita');
         }
+      }
 
-        // WhatsApp Confirmation (Fire & Forget)
-        // Only if NOT in silent mode, reminders are enabled, and we have a phone number
-        if (!silentMode && newAppt.remindersEnabled && newAppt.phone) {
-          // Format Name: First word only, Capitalized
-          const firstName = newAppt.client.trim().split(/\s+/)[0];
-          const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+      // WhatsApp Notification (Fire & Forget)
+      // Sends on BOTH create and update, unless silent mode is on
+      if (!silentMode && newAppt.remindersEnabled && newAppt.phone) {
+        const isUpdate = !!newAppt.id;
 
-          const dateStr = startDateTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-          const timeStr = newAppt.time;
+        // Format Name: First word only, Capitalized
+        const firstName = newAppt.client.trim().split(/\s+/)[0];
+        const formattedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 
-          // Calculate if subsequent reminder is needed (if > 24h from now)
-          const now = new Date();
-          const isToday = startDateTime.toDateString() === now.toDateString();
-          const tomorrow = new Date(now);
-          tomorrow.setDate(tomorrow.getDate() + 1);
-          const isTomorrow = startDateTime.toDateString() === tomorrow.toDateString();
+        const dateStr = startDateTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        const timeStr = newAppt.time;
 
-          let reminderText = "";
-          if (!isToday && !isTomorrow) {
-            reminderText = "\n\nTe enviaremos otro recordatorio el día previo a su cita.";
-          }
+        // Google Calendar link for the client to add the event
+        const endDateTime = new Date(startDateTime.getTime() + (newAppt.duration || 30) * 60 * 1000);
+        const gcalStart = startDateTime.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+        const gcalEnd = endDateTime.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+        const gcalTitle = encodeURIComponent(`Peluquería - ${newAppt.service || 'Cita'}`);
+        const gcalDetails = encodeURIComponent(`Cita en Almodóvar Peluqueras`);
+        const gcalLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gcalTitle}&dates=${gcalStart}/${gcalEnd}&details=${gcalDetails}`;
 
-          // Anti-Blocking Variations
-          const greetings = ['Hola', 'Buenas', 'Estimado/a'];
-          const closings = ['Gracias y hasta pronto!', 'Nos vemos pronto!', 'Gracias por confiar en nosotros.', 'Un saludo!'];
+        // Calculate if subsequent reminder is needed (if > 24h from now)
+        const now = new Date();
+        const isToday = startDateTime.toDateString() === now.toDateString();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const isTomorrow = startDateTime.toDateString() === tomorrow.toDateString();
 
-          const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-          const closing = closings[Math.floor(Math.random() * closings.length)];
-
-          // ADDED EMOJIS 📅 and ⏰ with explicit line breaks
-          const message = `${greeting} ${formattedName}, hemos confirmado tu cita:\n\n📅 ${dateStr}\n⏰ ${timeStr}${reminderText}\n\n${closing}`;
-
-          // Send async (don't block UI)
-          fetch('/api/whatsapp/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              phone: newAppt.phone,
-              message
-            })
-          }).then(res => {
-            if (!res.ok) console.warn('Failed to send WhatsApp confirmation');
-          }).catch(err => console.error('WhatsApp Error:', err));
+        let reminderText = "";
+        if (!isToday && !isTomorrow) {
+          reminderText = "\n\nTe enviaremos otro recordatorio el día previo a su cita.";
         }
+
+        // Anti-Blocking Variations
+        const greetings = ['Hola', 'Buenas', 'Estimado/a'];
+        const closings = ['Gracias y hasta pronto!', 'Nos vemos pronto!', 'Gracias por confiar en nosotros.', 'Un saludo!'];
+
+        const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+        const closing = closings[Math.floor(Math.random() * closings.length)];
+
+        // Different message for create vs update
+        const actionText = isUpdate
+          ? `tu cita ha sido *modificada*. Los nuevos datos son:`
+          : `hemos confirmado tu cita:`;
+
+        const message = `${greeting} ${formattedName}, ${actionText}\n\n📅 ${dateStr}\n⏰ ${timeStr}${reminderText}\n\n📲 Añádela a tu calendario: ${gcalLink}\n\n${closing}`;
+
+        // Send async (don't block UI)
+        fetch('/api/whatsapp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: newAppt.phone,
+            message
+          })
+        }).then(res => {
+          if (!res.ok) console.warn('Failed to send WhatsApp notification');
+        }).catch(err => console.error('WhatsApp Error:', err));
       }
 
       // Refresh after save
