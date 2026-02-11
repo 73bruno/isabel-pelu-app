@@ -470,8 +470,8 @@ export default function NewAppointmentModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md overflow-hidden transform transition-all scale-100 max-h-[95vh] sm:max-h-[90vh] flex flex-col">
                 <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-4 text-white flex justify-between items-center">
                     <h3 className="font-bold text-lg dark:text-white">{editingAppointment ? 'Editar Cita' : 'Nueva Cita'}</h3>
                     <div className="flex items-center gap-2">
@@ -488,7 +488,7 @@ export default function NewAppointmentModal({
                     </div>
                 </div>
 
-                <div className="p-6 space-y-5 bg-white dark:bg-gray-900">
+                <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 bg-white dark:bg-gray-900 overflow-y-auto flex-1">
 
                     {/* Client Input with Voice + Autocomplete */}
                     <div className="relative">
@@ -692,7 +692,7 @@ export default function NewAppointmentModal({
 
                     <div>
                         <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Peluquera</label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {stylists.map((s) => (
                                 <button
                                     key={s}

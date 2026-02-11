@@ -261,17 +261,37 @@ export default function SettingsModal({
     };
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
                 {/* Header */}
-                <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">Ajustes</h2>
+                <div className="p-3 sm:p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-900 shrink-0">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white">Ajustes</h2>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">×</button>
                 </div>
 
+                {/* Mobile Tab Bar (horizontal) */}
+                <div className="sm:hidden flex border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 shrink-0">
+                    {[
+                        { key: 'general', label: 'General' },
+                        { key: 'stylists', label: 'Peluqueras' },
+                        { key: 'schedule', label: 'Horarios' },
+                    ].map((tab) => (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key as any)}
+                            className={`flex-1 px-3 py-2.5 text-sm font-medium transition-all border-b-2 ${activeTab === tab.key
+                                ? 'border-gold text-gray-900 dark:text-white'
+                                : 'border-transparent text-gray-500 dark:text-gray-400'
+                                }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+
                 <div className="flex flex-1 overflow-hidden">
-                    {/* Sidebar */}
-                    <div className="w-40 bg-gray-50 dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 p-3 space-y-1">
+                    {/* Sidebar (desktop only) */}
+                    <div className="hidden sm:block w-40 bg-gray-50 dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 p-3 space-y-1 shrink-0">
                         {[
                             { key: 'general', label: 'General' },
                             { key: 'stylists', label: 'Peluqueras' },
@@ -291,7 +311,7 @@ export default function SettingsModal({
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+                    <div className="flex-1 p-4 sm:p-6 overflow-y-auto bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
                         {/* GENERAL TAB */}
                         {activeTab === 'general' && (
@@ -389,10 +409,10 @@ export default function SettingsModal({
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center justify-between">
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                                     <div className="flex items-center gap-3">
                                                         <div
-                                                            className="w-10 h-10 rounded-lg flex-shrink-0 shadow-sm"
+                                                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex-shrink-0 shadow-sm"
                                                             style={{
                                                                 backgroundColor: stylist.color.bg,
                                                                 border: `2px solid ${stylist.color.border}`
@@ -404,7 +424,7 @@ export default function SettingsModal({
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex items-center gap-1">
+                                                    <div className="flex items-center gap-1 flex-wrap justify-end">
                                                         {/* Reorder buttons */}
                                                         <div className="flex flex-col mr-2">
                                                             <button
@@ -482,10 +502,10 @@ export default function SettingsModal({
                                     const isOpen = intervals.length > 0;
 
                                     return (
-                                        <div key={dayKey} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                            <div className="w-24 font-medium">{dayName}</div>
+                                        <div key={dayKey} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg gap-2">
+                                            <div className="w-auto sm:w-24 font-medium text-sm sm:text-base">{dayName}</div>
 
-                                            <div className="flex-1 px-4">
+                                            <div className="flex-1 sm:px-4">
                                                 {!isEditing ? (
                                                     !isOpen ? (
                                                         <span className="text-red-400 text-sm italic">Cerrado</span>
@@ -515,7 +535,7 @@ export default function SettingsModal({
                                                 )}
                                             </div>
 
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-2 justify-end sm:justify-start">
                                                 {isEditing ? (
                                                     <>
                                                         <button

@@ -621,7 +621,7 @@ export default function Home() {
 
       {/* Silent Mode Banner - visible when bulk digitization mode is active */}
       {silentMode && (
-        <div className="bg-amber-50 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between gap-3 animate-fade-in">
+        <div className="bg-amber-50 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-3 animate-fade-in">
           <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
             <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
@@ -641,7 +641,7 @@ export default function Home() {
       )}
 
       {/* Main Board Area */}
-      <div className="flex-1 p-4 md:p-6 overflow-hidden relative">
+      <div className="flex-1 p-2 sm:p-4 md:p-6 overflow-hidden relative">
         {/* Loading State */}
         {isLoading && (
           <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 z-30 flex items-center justify-center">
@@ -672,7 +672,7 @@ export default function Home() {
 
           {/* LOGIC: DAY VIEW */}
           {viewMode === 'day' && (
-            <div className={`flex flex-col md:flex-row gap-4 h-full`}>
+            <div className={`flex flex-col md:flex-row gap-2 sm:gap-4 h-full`}>
               {stylistNames.map((stylist: string) => {
                 // Filter based on stylist selection
                 // On mobile: currentStylist is never "all" (forced by Header)
@@ -680,7 +680,7 @@ export default function Home() {
                 if (currentStylist !== 'all' && currentStylist !== stylist) return null;
 
                 return (
-                  <div key={stylist} className="flex flex-1 min-h-[400px] md:min-h-0">
+                  <div key={stylist} className="flex flex-1 min-h-[350px] md:min-h-0">
                     <Column
                       name={stylist}
                       appointments={appointments.filter(a => a.stylist === stylist)}

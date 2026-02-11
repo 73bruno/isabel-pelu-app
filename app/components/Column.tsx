@@ -252,13 +252,13 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
             >
                 {/* Column Header */}
                 <div
-                    className={`p-4 border-b flex items-center justify-between sticky top-0 z-20 transition-colors duration-300 backdrop-blur-sm`}
+                    className={`p-2.5 sm:p-4 border-b flex items-center justify-between sticky top-0 z-20 transition-colors duration-300 backdrop-blur-sm`}
                     style={{
                         backgroundColor: isClosed ? 'var(--background)' : 'var(--card-bg)',
                         borderColor: 'var(--border-color)'
                     }}
                 >
-                    <h2 className={`font-bold text-sm sm:text-base tracking-wide truncate ${isClosed ? 'opacity-50' : ''}`} style={{ color: 'var(--text-main)' }}>{name}</h2>
+                    <h2 className={`font-bold text-xs sm:text-base tracking-wide truncate ${isClosed ? 'opacity-50' : ''}`} style={{ color: 'var(--text-main)' }}>{name}</h2>
                     {!isClosed && (
                         <span className="hidden sm:inline-block px-2 py-0.5 bg-gold-light/20 dark:bg-gold/20 text-gold-dark dark:text-gold text-[10px] rounded-full font-bold">
                             {appointments.length}
@@ -298,20 +298,20 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
                                             }}
                                         >
                                             {/* Hour Label */}
-                                            <span className={`absolute -top-3 left-1 w-8 sm:w-10 text-xs font-bold font-mono z-10 opacity-70`} style={{ color: isOpen ? 'var(--text-main)' : 'var(--text-secondary)' }}>
+                                            <span className={`absolute -top-3 left-0.5 sm:left-1 w-7 sm:w-10 text-[10px] sm:text-xs font-bold font-mono z-10 opacity-70`} style={{ color: isOpen ? 'var(--text-main)' : 'var(--text-secondary)' }}>
                                                 {hour}:00
                                             </span>
 
                                             {/* Professional Timeline Markers - Visual Hierarchy */}
                                             {/* 15 min mark - very subtle dotted */}
                                             <div
-                                                className="absolute top-[25%] left-12 right-2 border-t"
+                                                className="absolute top-[25%] left-8 sm:left-12 right-2 border-t"
                                                 style={{ borderColor: 'var(--timeline-15min)', borderStyle: 'dotted' }}
                                             ></div>
 
                                             {/* 30 min mark - medium solid */}
                                             <div
-                                                className="absolute top-[50%] left-10 right-0 border-t"
+                                                className="absolute top-[50%] left-7 sm:left-10 right-0 border-t"
                                                 style={{ borderColor: 'var(--timeline-30min)' }}
                                             >
                                                 {/* 30 min label - only on non-compact */}
@@ -324,13 +324,13 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
 
                                             {/* 45 min mark - very subtle dotted */}
                                             <div
-                                                className="absolute top-[75%] left-12 right-2 border-t"
+                                                className="absolute top-[75%] left-8 sm:left-12 right-2 border-t"
                                                 style={{ borderColor: 'var(--timeline-15min)', borderStyle: 'dotted' }}
                                             ></div>
 
                                             {/* Vertical Line - stronger for hour structure */}
                                             <div
-                                                className="absolute top-0 bottom-0 left-10 border-r"
+                                                className="absolute top-0 bottom-0 left-7 sm:left-10 border-r"
                                                 style={{ borderColor: 'var(--timeline-hour)' }}
                                             ></div>
                                         </div>
@@ -341,7 +341,7 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
                             {/* Drag Selection Visualizer (Create) */}
                             {isDragging && dragStart && dragCurrent && (
                                 <div
-                                    className="absolute left-[3rem] right-[4px] bg-gold/30 border border-gold border-dashed rounded-md z-50 pointer-events-none flex items-center justify-center text-gold-dark font-bold text-xs"
+                                    className="absolute left-[2rem] sm:left-[3rem] right-[4px] bg-gold/30 border border-gold border-dashed rounded-md z-50 pointer-events-none flex items-center justify-center text-gold-dark font-bold text-xs"
                                     style={{
                                         top: `${dragStart.y}px`,
                                         height: `${Math.max(10, dragCurrent.duration * pixelsPerMinute)}px`
@@ -354,7 +354,7 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
                             {/* Move Preview Ghost */}
                             {movingAppointment && movePreviewTime && (
                                 <div
-                                    className="absolute left-[3rem] right-[4px] bg-blue-500/30 border-2 border-blue-500 border-dashed rounded-lg z-50 pointer-events-none flex items-center justify-center"
+                                    className="absolute left-[2rem] sm:left-[3rem] right-[4px] bg-blue-500/30 border-2 border-blue-500 border-dashed rounded-lg z-50 pointer-events-none flex items-center justify-center"
                                     style={{
                                         top: `${((parseInt(movePreviewTime.split(':')[0]) - startHour) * 60 + parseInt(movePreviewTime.split(':')[1])) * pixelsPerMinute}px`,
                                         height: `${movingAppointment.duration * pixelsPerMinute}px`
@@ -374,8 +374,9 @@ export default function Column({ name, appointments, onAddClick, onEditClick, on
 
                                     const isOverlapping = index > 0 && startMinutesFromBase < ((parseInt(sortedAppointments[index - 1].time.split(':')[0]) - startHour) * 60 + parseInt(sortedAppointments[index - 1].time.split(':')[1]) + sortedAppointments[index - 1].duration);
 
-                                    const leftBase = '3rem';
-                                    const overlapIndent = isOverlapping ? '1.5rem' : '0px';
+                                    const leftBase = '2rem';
+                                    const smLeftBase = '3rem';
+                                    const overlapIndent = isOverlapping ? '1rem' : '0px';
 
                                     const isBeingMoved = movingAppointment?.id === appt.id;
 

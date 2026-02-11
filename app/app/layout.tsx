@@ -16,6 +16,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Almodóvar Peluqueras",
   description: "Gestión de Citas Premium",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon-32.png",
+    shortcut: "/favicon-16.png",
+    apple: "/apple-touch-icon.png",
+  },
+  themeColor: "#B8860B",
 };
 
 export default function RootLayout({
